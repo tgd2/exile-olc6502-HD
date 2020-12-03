@@ -1,0 +1,68 @@
+#pragma once
+#include "olcPixelGameEngine.h"
+#include "olc6502.h"
+#include "bus.h"
+
+#include <array>
+#include <cstdint>
+#include <string>
+
+const int GAME_TILE_WIDTH = 32; const int GAME_TILE_HEIGHT = 32;
+
+struct XY {
+	uint16_t GameX;          uint16_t GameY;
+};
+
+struct Obj {
+	uint8_t ObjectType;
+	uint8_t SpriteID;        uint8_t Palette;
+	uint8_t HorizontalFlip;  uint8_t VerticalFlip;  
+	uint8_t Teleporting;     uint8_t Timer;
+	uint16_t GameX;          uint16_t GameY;
+};
+
+struct Tile {
+	uint8_t TileID;          uint8_t SpriteID;
+	uint8_t Orientation;     uint8_t Palette;
+	uint16_t GameX;          uint16_t GameY;
+	uint16_t FrameLastDrawn;
+};
+
+class Exile
+{
+
+private:
+	bool ParseAssemblyLine(std::string sLine);
+	void GenerateBackgroundGrid();
+	void GenerateSpriteSheet();
+
+	void MoveRAM(uint16_t nSource, uint16_t nTarget, uint8_t nLength);
+
+	Tile TileGrid[256][256];
+	uint8_t nSpriteSheet[128][128];
+
+	std::map<uint32_t, olc::Decal*> SpriteDecals;
+
+	void DrawExileSprite_PixelByPixel(olc::PixelGameEngine* PGE, uint8_t nSpriteID, int32_t nX, int32_t nY, uint8_t nPaletteID, uint8_t nHorizontalInvert = 0, uint8_t nVerticalInvert = 0, uint8_t nTeleporting = 0, uint8_t nTimer = 0);
+
+public:
+	Bus BBC;
+	olc6502 cpu;
+
+	void Reset();
+	bool LoadExileFromDisassembly(std::string sFile);
+	void PatchExileRAM();
+
+	std::vector<XY> WaterTiles;
+
+	Obj Object(uint8_t nObjectID);
+	Tile BackgroundGrid(uint8_t x, uint8_t y);
+	
+	void DetermineBackground(uint8_t x, uint8_t y, uint16_t nFrameCounter);
+
+	uint8_t SpriteSheet(uint8_t i, uint8_t j);
+	uint16_t WaterLevel(uint8_t x);
+
+	void DrawExileParticle(olc::PixelGameEngine* PGE, int32_t nScreenX, int32_t nScreenY, float fZoom, uint8_t nDoubleHeight, olc::Pixel p);
+	void DrawExileSprite(olc::PixelGameEngine* PGE, uint8_t nSpriteID, int32_t nScreenX, int32_t nScreenY, float fZoom, uint8_t nPaletteID, uint8_t nHorizontalInvert = 0, uint8_t nVerticalInvert = 0, uint8_t nTeleporting = 0, uint8_t nTimer = 0);
+};
