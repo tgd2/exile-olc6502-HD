@@ -2,7 +2,6 @@
 #include "olcPixelGameEngine.h"
 
 #include "Exile.h"
-#include "newSN76489.h"
 
 #include <string>
 #include <queue>
