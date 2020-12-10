@@ -66,15 +66,19 @@ bool Exile::LoadExileFromDisassembly(std::string sFile) {
 	}
 
 	// Patch some minor corrections to disassembly:
-	BBC.ram[0x115D] = 0x2F;  BBC.ram[0x14B2] = 0xFF;  BBC.ram[0x14B4] = 0x60;  BBC.ram[0x215A] = 0x60;
-	BBC.ram[0x2628] = 0xA5;  BBC.ram[0x2629] = 0xC0;  BBC.ram[0x29F3] = 0x1C;  BBC.ram[0x29F4] = 0x22;
-	BBC.ram[0x29F5] = 0x32;  BBC.ram[0x29F6] = 0x38;  BBC.ram[0x3E99] = 0x3C;  BBC.ram[0x442C] = 0x20;
-	BBC.ram[0x442D] = 0xB9;  BBC.ram[0x442E] = 0x4A;
+	BBC.ram[0x05D4] = 0x1D; BBC.ram[0x086E] = 0x3C; BBC.ram[0x08A3] = 0x50;	BBC.ram[0x0915] = 0x0F;
+	BBC.ram[0x094E] = 0xFF;	BBC.ram[0x115D] = 0x2F; BBC.ram[0x14B2] = 0xFF;	BBC.ram[0x14B4] = 0x60;
+	BBC.ram[0x215A] = 0x60; BBC.ram[0x2628] = 0xA5; BBC.ram[0x2629] = 0xC0; BBC.ram[0x29F3] = 0x1C;
+	BBC.ram[0x29F4] = 0x22;	BBC.ram[0x29F5] = 0x32; BBC.ram[0x29F6] = 0x38; BBC.ram[0x2D6B] = 0x3D;
+	BBC.ram[0x31D6] = 0xC4; BBC.ram[0x3520] = 0xC2; BBC.ram[0x3E99] = 0x3C; BBC.ram[0x40C1] = 0x57;
+	BBC.ram[0x40C2] = 0x07;	BBC.ram[0x40C3] = 0x43; BBC.ram[0x40C4] = 0xF6; BBC.ram[0x436F] = 0x05;
+	BBC.ram[0x442C] = 0x20; BBC.ram[0x442D] = 0xB9; BBC.ram[0x442E] = 0x4A; BBC.ram[0x492E] = 0x82;
+	BBC.ram[0x492F] = 0xA9; BBC.ram[0x4930] = 0x4B; BBC.ram[0x4E33] = 0x97;
 
 	return true;
 }
 
-void Exile::MoveRAM(uint16_t nSource, uint16_t nTarget, uint8_t nLength) {
+void Exile::CopyRAM(uint16_t nSource, uint16_t nTarget, uint8_t nLength) {
 	for (int i = 0; i < nLength; i++) {
 		BBC.ram[nTarget + i] = BBC.ram[nSource + i];
 	}
@@ -84,38 +88,39 @@ void Exile::PatchExileRAM() {
 	std::string P = "";
 
 	// Relocate primary object stacks, to give space for 128 objects
-	MoveRAM(0x0860, 0x9600, 0x10);  // object_stack_type
-	MoveRAM(0x0870, 0x9700, 0x10);  // object_stack_sprite
-	MoveRAM(0x0880, 0x9800, 0x10);  MoveRAM(0x0890, 0x9880, 0x01);  // object_stack_x_low
-	MoveRAM(0x0891, 0x9900, 0x10);  MoveRAM(0x08a1, 0x9980, 0x02);  // object_stack_x
-	MoveRAM(0x08a3, 0x9a00, 0x10);  MoveRAM(0x08b3, 0x9a80, 0x01);  // object_stack_y_low
-	MoveRAM(0x08b4, 0x9b00, 0x10);  MoveRAM(0x08c4, 0x9b80, 0x02);  // object_stack_y
-	MoveRAM(0x08c6, 0x9c00, 0x10);  // object_stack_flags
-	MoveRAM(0x08d6, 0x9d00, 0x10);  // object_stack_palette
-	MoveRAM(0x08e6, 0x9e00, 0x10);  // object_stack_vel_x
-	MoveRAM(0x08f6, 0x9f00, 0x10);  // object_stack_vel_y
-	P += "#a000: a0 00 e0 e0 a0 a0 a0 a0 a0 a0 20 80 20 20 20 20 \n"; // object_stack_target
-	P += "#a800: 10 00 10 10 11 11 11 11 10 10 11 10 11 10 11 00 \n"; // object_stack_target_object (new stack)
-	MoveRAM(0x0916, 0xa100, 0x10);  // object_stack_tx
-	MoveRAM(0x0926, 0xa200, 0x10);  // object_stack_energy
-	MoveRAM(0x0936, 0xa300, 0x10);  // object_stack_ty
-	MoveRAM(0x0946, 0xa400, 0x10);  // object_stack_supporting
-	MoveRAM(0x0956, 0xa500, 0x10);  // object_stack_timer
-	MoveRAM(0x0966, 0xa600, 0x10);  // object_stack_data_pointer
-	MoveRAM(0x0976, 0xa700, 0x10);  // object_stack_extra
+	CopyRAM(0x0860, 0x9600, 0x10);  // object_stack_type
+	CopyRAM(0x0870, 0x9700, 0x10);  // object_stack_sprite
+	CopyRAM(0x0880, 0x9800, 0x10);  CopyRAM(0x0890, 0x9880, 0x01);  // object_stack_x_low
+	CopyRAM(0x0891, 0x9900, 0x10);  CopyRAM(0x08a1, 0x9980, 0x02);  // object_stack_x
+	CopyRAM(0x08a3, 0x9a00, 0x10);  CopyRAM(0x08b3, 0x9a80, 0x01);  // object_stack_y_low
+	CopyRAM(0x08b4, 0x9b00, 0x10);  CopyRAM(0x08c4, 0x9b80, 0x02);  // object_stack_y
+	CopyRAM(0x08c6, 0x9c00, 0x10);  // object_stack_flags
+	CopyRAM(0x08d6, 0x9d00, 0x10);  // object_stack_palette
+	CopyRAM(0x08e6, 0x9e00, 0x10);  // object_stack_vel_x
+	CopyRAM(0x08f6, 0x9f00, 0x10);  // object_stack_vel_y
+	P += "#a000: a0 00 e0 e0 a0 a0 a0 a0 a0 a0 20 80 20 20 20 00 \n"; // object_stack_target
+	P += "#a800: 10 00 10 10 11 11 11 11 10 10 11 10 11 10 11 02 \n"; // object_stack_target_object (new stack)
+	CopyRAM(0x0916, 0xa100, 0x10);  // object_stack_tx
+	CopyRAM(0x0926, 0xa200, 0x10);  // object_stack_energy
+	CopyRAM(0x0936, 0xa300, 0x10);  // object_stack_ty
+	CopyRAM(0x0946, 0xa400, 0x10);  // object_stack_supporting
+	CopyRAM(0x0956, 0xa500, 0x10);  // object_stack_timer
+	CopyRAM(0x0966, 0xa600, 0x10);  // object_stack_data_pointer
+	CopyRAM(0x0976, 0xa700, 0x10);  // object_stack_extra
 
 	// Various updates to code to refer to new stack locations
 	// Note: Currently, there is also a 'redirect' to the new stack locations in olc6502
 	// To do: update patched code here, so that the redirect is not required
+
 	P += "&1a62: 4c 10 ff   JMP &ff10       ; JUMP TO PATCHED CODE \n";
-	P += "&ff10: bd 06 09   LDA &0906, X    ; object_stack_target \n"; // (only need bits 5 to 8) 
+	P += "&ff10: bd 06 09   LDA &0906, X    ; object_stack_target \n"; // (only need bits 5 to 7) 
 	P += "&ff13: 85 3e      STA &3e         ; this_object_target \n";
 	P += "&ff15: 85 3f      STA &3f         ; this_object_target_old \n";
 	P += "&ff17: bd 00 a8   LDA &a800, X    ; object_stack_target_object \n"; // (new stack)
 	P += "&ff1a: 85 0e      STA &0e         ; this_object_target_object \n";
 	P += "&ff1c: 4c 6d 1a   JMP 1a6d        ; JUMP BACK \n";
 
-	P += "&1a8f: 4c 00 ff   JMP ff00        ; JUMP TO PATCHED CODE \n"; //needed?
+	P += "&1a8f: 4c 00 ff   JMP ff00        ; JUMP TO PATCHED CODE \n";
 	P += "&ff00: 29 0f      AND #&0f \n"; 
 	P += "&ff01: 0a         ASL \n";
 	P += "&ff02: 0a         ASL \n";
@@ -129,6 +134,42 @@ void Exile::PatchExileRAM() {
 	P += "&ff25: a5 0e      LDA &0e         ; this_object_target_object \n";
 	P += "&ff27: 9d 00 a8   STA &a800, X    ; this_object_target_object \n";
 	P += "&ff2a: 4c c7 1d   JMP 1dc7        ; JUMP BACK \n";
+
+//	P += "&1e3c: 9d 00 a8   STA &a800, X; object_stack_target_object \n";
+	P += "&1e3c: 4c 00 fe   JMP fe00        ; JUMP TO PATCHED CODE \n";
+	P += "&fe00: 9d 00 a8   STA &a800, X    ; object_stack_target_object \n";
+	P += "&fe03: 8d 0c fe   STA &fe0c       ; MODIFYING CODE BELOW \n";
+	P += "&fe06: A9 00      LDA &#00        ; Zero \n";
+	P += "&fe08: 9d 00 a0   STA &a000, X    ; object_stack_target \n";
+	P += "&fe0b: A9 00      LDA &#00        ; SELF MOD CODE \n";
+	P += "&fe0d: 4c 3f 1e   JMP 1e3f        ; JUMP BACK \n";
+
+//	P += "&1edf: 99 00 a8     STA &a800, Y; object_stack_target_object \n";
+	P += "&1edf: 4c 10 fe   JMP fe00        ; JUMP TO PATCHED CODE \n";
+	P += "&fe10: 99 00 a8   STA &a800, Y    ; object_stack_target_object \n";
+	P += "&fe13: 8d 1c fe   STA &fe0c       ; MODIFYING CODE BELOW \n";
+	P += "&fe16: A9 00      LDA &#00        ; Zero \n";
+	P += "&fe18: 99 00 a0   STA &a000, Y    ; object_stack_target \n";
+	P += "&fe1b: A9 00      LDA &#00        ; SELF MOD CODE \n";
+	P += "&fe1d: 4c e2 1e   JMP 1ee2        ; JUMP BACK \n";
+
+//	P += "&27b7: 9d 00 a8     STA &a800, X; object_stack_target_object \n";
+	P += "&27b7: 4c 20 fe   JMP fe20        ; JUMP TO PATCHED CODE \n";
+	P += "&fe20: 9d 00 a8   STA &a800, X    ; object_stack_target_object \n";
+	P += "&fe23: 8d 2c fe   STA &fe0c       ; MODIFYING CODE BELOW \n";
+	P += "&fe26: A9 00      LDA &#00        ; Zero \n";
+	P += "&fe28: 9d 00 a0   STA &a000, X    ; object_stack_target \n";
+	P += "&fe2b: A9 00      LDA &#00        ; SELF MOD CODE \n";
+	P += "&fe2d: 4c ba 27   JMP 27ba        ; JUMP BACK \n";
+
+//	P += "&4bfb: 9d 00 a8     STA &a800, X; object_stack_target_object \n";
+	P += "&4bfb: 4c 30 fe   JMP fe30        ; JUMP TO PATCHED CODE \n";
+	P += "&fe30: 9d 00 a8   STA &a800, X    ; object_stack_target_object \n";
+	P += "&fe33: 8d 3c fe   STA &fe0c       ; MODIFYING CODE BELOW \n";
+	P += "&fe36: A9 00      LDA &#00        ; Zero \n";
+	P += "&fe38: 9d 00 a0   STA &a000, X    ; object_stack_target \n";
+	P += "&fe3b: A9 00      LDA &#00        ; SELF MOD CODE \n";
+	P += "&fe3d: 4c fe 4b   JMP 4bfe        ; JUMP BACK \n";
 
 	P += "&2a7e: b9 80 98   LDA &9880, Y    ; (object_stack_x) \n";
 	P += "&2a89: b9 80 9a   LDA &9a80, Y    ; (object_stack_y) \n";
@@ -157,16 +198,13 @@ void Exile::PatchExileRAM() {
 	P += "&1e29: a2 7f      LDX #&7f        ; Start at object 127 \n";
 	P += "&1e70: a0 7f      LDY #&7f        ; Start at object 127 \n";
 	P += "&1eb8: c0 80      CPY #&80        ; As now up to 128 objects \n";
+	P += "&288e: a2 80      LDX #&80 \n"    ; // Updated stack item used for targeting
 	P += "&2a78: a0 7f      LDY #&7f        ; Start at object 127 \n";
 	P += "&2a93: 69 80      ADC #&80        ; As now up to 128 objects \n";
 	P += "&2afb: 69 80      ADC #&80        ; As now up to 128 objects \n"; // Needed?
 	P += "&3442: a2 7f      LDX #&7f        ; As now up to 128 objects \n";
 	P += "&3c51: a0 7f      LDY #&7f        ; As now up to 128 objects \n";
 	P += "&609e: a0 7f      LDY #&7f        ; As now up to 128 objects \n"; // Not used?
-
-	// Force a check of secondary stack, to fill primary stack (needed?)
-	P += "#0b76: f0                         ; consider_secondary_stack_objects \n";
-	P += "#0b77: ff                         ; secondary_stack_player_odometer \n"; //
 
 	// Relocating and restructuring particle stack, to give space for 127 particles
 	// And some updates, to ensure pixels are process, even if off the BBC screen
@@ -258,81 +296,73 @@ void Exile::PatchExileRAM() {
 	P += "&2254: 4c 00 90   JMP & 90XX     ; JUMP TO CORRESPONDING PATCH CODE \n";
 
 	P += "; X = 00: If we jump here -> working with Y: \n";
-	P += "&9000: 9d 00 8b         STA &8b00, X  ; particle_stack_y \n";
-	P += "&9003: 68               PLA \n";
-	P += "&9004: 9d 00 89         STA &8900, X  ; particle_stack_y_low \n";
-	P += "&9007: 68               PLA \n";
-	P += "&9008: 9d 00 87         STA &8700, X  ; particle_stack_velocity_y \n";
-	P += "&900b: 4c 5e 22         JMP &225e     ; JUMP BACK \n";
+	P += "&9000: 9d 00 8b   STA &8b00, X  ; particle_stack_y \n";
+	P += "&9003: 68         PLA \n";
+	P += "&9004: 9d 00 89   STA &8900, X  ; particle_stack_y_low \n";
+	P += "&9007: 68         PLA \n";
+	P += "&9008: 9d 00 87   STA &8700, X  ; particle_stack_velocity_y \n";
+	P += "&900b: 4c 5e 22   JMP &225e     ; JUMP BACK \n";
 
 	P += "; X = fe: If we jump here -> working with Y: \n";
-	P += "&90fe: 9d 00 8a         STA &8a00, X  ; particle_stack_x \n";
-	P += "&9101: 68               PLA \n";
-	P += "&9102: 9d 00 88         STA &8800, X  ; particle_stack_x_low \n";
-	P += "&9105: 68               PLA \n";
-	P += "&9106: 9d 00 86         STA &8600, X  ; particle_stack_velocity_x \n";
-	P += "&9109: 4c 5e 22         JMP &225e     ; JUMP BACK \n";
+	P += "&90fe: 9d 00 8a   STA &8a00, X  ; particle_stack_x \n";
+	P += "&9101: 68         PLA \n";
+	P += "&9102: 9d 00 88   STA &8800, X  ; particle_stack_x_low \n";
+	P += "&9105: 68         PLA \n";
+	P += "&9106: 9d 00 86   STA &8600, X  ; particle_stack_velocity_x \n";
+	P += "&9109: 4c 5e 22   JMP &225e     ; JUMP BACK \n";
 
-	P += "&2270: 4c 00 92         JMP 9200       ; JUMP TO PATCHED CODE \n";
+	P += "&2270: 4c 00 92   JMP 9200       ; JUMP TO PATCHED CODE \n";
 
-	P += "&9200: bd 00 87         LDA &8700, X  ; particle_stack_velocity_y \n";
-	P += "&9203: 79 43 00         ADC &0043, Y \n";
-	P += "&9206: 20 7f 32         JSR &327f     ; prevent_overflow \n";
-	P += "&9209: 9d 00 87         STA &8700, X  ; particle_stack_velocity_y \n";
-	P += "&920c: 88               DEY \n";
-	P += "&920d: 88               DEY \n";
+	P += "&9200: bd 00 87   LDA &8700, X  ; particle_stack_velocity_y \n";
+	P += "&9203: 79 43 00   ADC &0043, Y \n";
+	P += "&9206: 20 7f 32   JSR &327f     ; prevent_overflow \n";
+	P += "&9209: 9d 00 87   STA &8700, X  ; particle_stack_velocity_y \n";
+	P += "&920c: 88         DEY \n";
+	P += "&920d: 88         DEY \n";
 
-	P += "&920e: bd 00 86         LDA &8600, X; particle_stack_velocity_x \n";
-	P += "&9211: 79 43 00         ADC &0043, Y \n";
-	P += "&9214: 20 7f 32         JSR &327f; prevent_overflow \n";
-	P += "&9217: 9d 00 86         STA &8600, X; particle_stack_velocity_x \n";
-	P += "&921a: 88               DEY \n";
-	P += "&921b: 88               DEY \n";
+	P += "&920e: bd 00 86   LDA &8600, X; particle_stack_velocity_x \n";
+	P += "&9211: 79 43 00   ADC &0043, Y \n";
+	P += "&9214: 20 7f 32   JSR &327f; prevent_overflow \n";
+	P += "&9217: 9d 00 86   STA &8600, X; particle_stack_velocity_x \n";
+	P += "&921a: 88         DEY \n";
+	P += "&921b: 88         DEY \n";
 
-	P += "&921c: 4c 83 22         JMP 2283 ;       JUMP BACK \n";
+	P += "&921c: 4c 83 22   JMP 2283 ;       JUMP BACK \n";
 
-	P += "&26c8: 20 50 ff         JSR &ff50; JUMP TO PATCHED SUB [Call it 9 times, as a bigger area to cover!] \n";
-	P += "&26cb: 20 50 ff         JSR &ff50; \n";
-	P += "&26ce: 20 50 ff         JSR &ff50; \n";
-	P += "&26d1: 20 50 ff         JSR &ff50; \n";
-	P += "&26d4: 20 50 ff         JSR &ff50; \n";
-	P += "&26d7: 20 50 ff         JSR &ff50; \n";
-	P += "&26da: 20 50 ff         JSR &ff50; \n";
-	P += "&26dd: 20 50 ff         JSR &ff50; \n";
-	P += "&26e0: 20 50 ff         JSR &ff50; \n";
+	P += "&26c8: 20 50 ff   JSR &ff50; JUMP TO PATCHED SUB [Call it 9 times, as a bigger area to cover!] \n";
+	P += "&26cb: 20 50 ff   JSR &ff50; \n";
+	P += "&26ce: 20 50 ff   JSR &ff50; \n";
+	P += "&26d1: 20 50 ff   JSR &ff50; \n";
+	P += "&26d4: 20 50 ff   JSR &ff50; \n";
+	P += "&26d7: 20 50 ff   JSR &ff50; \n";
+	P += "&26da: 20 50 ff   JSR &ff50; \n";
+	P += "&26dd: 20 50 ff   JSR &ff50; \n";
+	P += "&26e0: 20 50 ff   JSR &ff50; \n";
 
-	P += "&26e3: a0 4d            ; JUST FILLER \n";
+	P += "&26e3: a0 4d                 ; JUST FILLER \n";
 	P += "&26e5: 88 \n";
 
-	P += "&ff50: a9 3f            LDA #&3f - Big star area \n";
-	P += "&ff52: 20 43 27         JSR &2743; get_random_square_near_player \n";
+	P += "&ff50: a9 3f      LDA #&3f - Big star area \n";
+	P += "&ff52: 20 43 27   JSR &2743; get_random_square_near_player \n";
+	P += "&ff55: c9 4e      CMP #&4e ; # are we above y = &4e ? Check before determining background \n";
+	P += "&ff57: b0 1d      BCS &ff73; no_stars \n";
+	P += "&ff59: 20 15 17   JSR &1715; determine_background \n";
+	P += "&ff5c: a5 97      LDA &97; square_y; COPIED FROM 26c8 - 26e3 (except two lines above) \n";
+	CopyRAM(0x26ce, 0xff5e, 0x18);  // no_emerging_objects subroutine
+	P += "&ff76: 60         RTS \n";
 
-	P += "&ff55: c9 4e            CMP #&4e ; # are we above y = &4e ? Check before determining background \n";
-	P += "&ff57: b0 1d            BCS &ff73; no_stars \n";
+	P += "&273d: 4c 30 ff   JMP ff30        ; JUMP TO PATCHED CODE \n";
+	
+	P += "&ff30: a9 c0      LDA #&c0 \n";
+	P += "&ff32: 99 06 09   STA &0906, Y    ; object_stack_target \n";
+	P += "&ff35: a9 00      LDA #&00 \n";
+	P += "&ff37: 99 00 a8   STA &a800, Y    ; this_object_target_object \n";
+	
+	P += "&ff3a: 4c 42 27   JMP 2742        ; JUMP BACK \n";
 
-	P += "&ff59: 20 15 17         JSR &1715; determine_background \n";
-
-	P += "&ff5c: a5 97            LDA &97; square_y; COPIED FROM 26c8 - 26e3 (except two lines above) \n";
-
-	MoveRAM(0x26ce, 0xff5e, 0x18);  // no_emerging_objects subroutine
-
-	P += "&ff76: 60               RTS \n";
-
-	P += "&273d: 4c 30 ff         JMP ff30        ; JUMP TO PATCHED CODE \n";
-
-	P += "&ff30: a9 c0            LDA #&c0 \n";
-	P += "&ff32: 99 06 09         STA &0906, Y   ; object_stack_target \n";
-
-	P += "&ff35: a9 00            LDA #&00 \n";
-	P += "&ff37: 99 00 a8         STA &a800, Y   ; this_object_target_object \n";
-
-	P += "&ff3a: 4c 42 27         JMP 2742        ; JUMP BACK \n";
-
-	P += "&288e: a2 80            LDX #&80 \n";
-
-	// Radius // To do: recalibrate
-	P += "&0c5a: a0 1f            LDY #&1f \n";
-	P += "#19a7: 1f 1f 1f         ; funny_table_19a7 \n";
+	// Radius:
+	P += "&0c5a: a0 2f      LDY #&1f \n";
+	P += "#19a7: 2f 2f 2f                   ; funny_table_19a7 \n";
 
 	std::istringstream iss(P);
 	std::string sLine;
@@ -367,9 +397,11 @@ void Exile::GenerateBackgroundGrid() {
 			TileGrid[x][y].Orientation = BBC.ram[0x09]; // square_orientation
 			TileGrid[x][y].Palette = BBC.ram[0x73]; // this_object_palette
 
-			TileGrid[x][y].GameX = (BBC.ram[0x4f] + (BBC.ram[0x53] << 8)) / 8; //(this_object_x_low + (this_object_x << 8)) / 16;
-			TileGrid[x][y].GameY = (BBC.ram[0x51] + (BBC.ram[0x55] << 8)) / 8; //(this_object_y_low + (this_object_y << 8)) / 8;
+			TileGrid[x][y].GameX = (BBC.ram[0x4f] | (BBC.ram[0x53] << 8)) / 8; //(this_object_x_low + (this_object_x << 8)) / 16;
+			TileGrid[x][y].GameY = (BBC.ram[0x51] | (BBC.ram[0x55] << 8)) / 8; //(this_object_y_low + (this_object_y << 8)) / 8;
 			TileGrid[x][y].SpriteID = BBC.ram[0x75]; //this_object_sprite
+
+			TileGrid[x][y].FrameLastDrawn = 0x10000; // ie, effectively never
 
 			// Keep a separate record if it's a water tile and set the TileGrid to blank
 			if (TileGrid[x][y].TileID == 0x0d) { // 0x0d = water tile
@@ -377,7 +409,7 @@ void Exile::GenerateBackgroundGrid() {
 				WaterTile.GameX = x;
 				WaterTile.GameY = y;
 				WaterTiles.push_back(WaterTile);
-				TileGrid[x][y].TileID = 0x19; // 0x19 = blank tile
+				TileGrid[x][y].TileID = GAME_TILE_BLANK; // 0x19 = blank tile
 			}
 		}
 	}
@@ -547,8 +579,8 @@ void Exile::DrawExileSprite(olc::PixelGameEngine* PGE,
 	float fHorizontalZoom = fZoom * 1.005; // 1.005 multiple seems to make the scrolling smoother?
 	float fVerticalZoom = fZoom * 1.005; // 1.005 multiple seems to make the scrolling smoother?
 
-	if (int(fHorizontalZoom) != fHorizontalZoom) fZoom * 1.005; // If non-integer, scale by an extra 1.005 to avoid gaps in tiles;
-	if (int(fVerticalZoom) != fVerticalZoom) fZoom * 1.005; // If non-integer, scale by an extra 1.005 to avoid gaps in tiles;
+	if (int(fHorizontalZoom) != fHorizontalZoom) fZoom * 1.005; // If non-integer, scale by an extra 1.005 to help avoid gaps in tiles;
+	if (int(fVerticalZoom) != fVerticalZoom) fZoom * 1.005; // If non-integer, scale by an extra 1.005 to help avoid gaps in tiles;
 
 	if (nHorizontalInvert == 1) {
 		nScreenX = nScreenX + round(fHorizontalZoom * (sprSprite->width));
@@ -563,15 +595,17 @@ void Exile::DrawExileSprite(olc::PixelGameEngine* PGE,
 	//---------------------------------------------------------------------------------
 }
 
-void Exile::Reset()
+void Exile::Initialise()
 {
 	GenerateSpriteSheet();
 	GenerateBackgroundGrid();
+
+	BBC.cpu.stkp = 0xff;
+	BBC.cpu.pc = GAME_RAM_STARTGAMELOOP;
 }
 
 Obj Exile::Object(uint8_t nObjectID)
 {
-	//To do: add bound checking?
 	Obj O;
 
 	O.ObjectType = BBC.ram[0x9600 + nObjectID]; // object_stack_type
@@ -589,6 +623,16 @@ Obj Exile::Object(uint8_t nObjectID)
 	return O;
 }
 
+ExileParticle Exile::Particle(uint8_t nparticleID) {
+	ExileParticle P;
+
+	P.GameX = (BBC.ram[0x8800 + nparticleID] | (BBC.ram[0x8a00 + nparticleID] << 8)) / 8; // (particle_stack_x_low | particle_stack_x << 8) / 8
+	P.GameY = (BBC.ram[0x8900 + nparticleID] | (BBC.ram[0x8b00 + nparticleID] << 8)) / 8; // (particle_stack_y_low | particle_stack_y << 8) / 8
+	P.ParticleType = BBC.ram[0x8d00 + nparticleID]; // particle_stack_type
+
+	return P;
+}
+
 Tile Exile::BackgroundGrid(uint8_t x, uint8_t y)
 {
 	//To do: incorporate bound checking, and shift adjustments here?
@@ -596,6 +640,38 @@ Tile Exile::BackgroundGrid(uint8_t x, uint8_t y)
 }
 
 void Exile::DetermineBackground(uint8_t x, uint8_t y, uint16_t nFrameCounter) {
+
+	//Clawed robots:
+	if ((x == 0x75) && (y == 0x87)) return; // To prevent spawning magenta clawed robot too soon
+	if ((x == 0x2e) && (y == 0xd6)) return; // To prevent spawning green clawed robot too soon
+	// Note: cyan and red clawed robot behave well already
+
+	//Birds:
+	if ((x == 0xb0) && (y == 0x4e)) return;
+	//if ((x == 0x77) && (y == 0x54)) return; // Tree
+	//if ((x == 0x64) && (y == 0x80)) return; // Tree
+	if ((x == 0x80) && (y == 0x88)) return;
+	//if ((x == 0x62) && (y == 0x72)) return; // Tree
+	if ((x == 0xe4) && (y == 0xb4)) return;
+	//if ((x == 0x62) && (y == 0xa2)) return; // Tree
+	//if ((x == 0x63) && (y == 0xb5)) return; // Tree
+	if ((x == 0x47) && (y == 0x59)) return;
+	if ((x == 0x84) && (y == 0x70)) return;
+	if ((x == 0x9e) && (y == 0x69)) return;
+
+	//Imps:
+	//if ((x == 0x64) && (y == 0x94)) return; //Tree
+	//if ((x == 0x47) && (y == 0xc0)) return; //Tree
+	if ((x == 0x87) && (y == 0xbf)) return;
+
+	//if ((x == 0x2b) && (y == 0x80)) return; //Tree
+	if ((x == 0x80) && (y == 0x75)) return;
+	//if ((x == 0x8a) && (y == 0x78)) return; //Tree
+
+	//if ((x == 0xa7) && (y == 0x9a)) return; //Tree
+	//if ((x == 0xc6) && (y == 0xbe)) return; //Tree
+	//if ((x == 0x64) && (y == 0xc6)) return; //Tree
+
 	if (TileGrid[x][y].FrameLastDrawn != (nFrameCounter - 1)) {
 		// Save CPU state:  
 		uint8_t a_ = BBC.cpu.a; uint8_t x_ = BBC.cpu.x; uint8_t y_ = BBC.cpu.x;
@@ -622,7 +698,6 @@ void Exile::DetermineBackground(uint8_t x, uint8_t y, uint16_t nFrameCounter) {
 	TileGrid[x][y].FrameLastDrawn = nFrameCounter;
 }
 
-
 uint8_t Exile::SpriteSheet(uint8_t i, uint8_t j)
 {
 	return nSpriteSheet[i][j];
@@ -646,4 +721,16 @@ uint16_t Exile::WaterLevel(uint8_t x)
 			return nWaterLevel;
 		}
 	}
+}
+
+void Exile::Cheat_GetAllEquipment() 
+{
+	//Acquire all keys and equipment - optional! :)
+	for (int i = 0; i < (0x0818 - 0x0806); i++) BBC.ram[0x0806 + i] = 0xff;
+}
+
+void Exile::Cheat_StoreAnyObject()
+{
+	BBC.ram[0x34c6] = 0x18;
+	BBC.ram[0x34c7] = 0x18;
 }

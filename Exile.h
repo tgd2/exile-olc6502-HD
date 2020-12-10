@@ -7,7 +7,15 @@
 #include <cstdint>
 #include <string>
 
-const int GAME_TILE_WIDTH = 32; const int GAME_TILE_HEIGHT = 32;
+const int GAME_TILE_WIDTH = 32;
+const int GAME_TILE_HEIGHT = 32;
+const uint8_t GAME_TILE_BLANK = 0x19;
+
+const uint16_t GAME_RAM_INPUTS = 0x126b;
+const uint16_t GAME_RAM_PLAYER_TELEPORTING = 0x19b5;
+const uint16_t GAME_RAM_STARTGAMELOOP = 0x19b6;
+const uint16_t GAME_RAM_SCREENFLASH = 0x1fa6;
+const uint16_t GAME_RAM_EARTHQUAKE = 0x260a;
 
 struct XY {
 	uint16_t GameX;          uint16_t GameY;
@@ -25,7 +33,12 @@ struct Tile {
 	uint8_t TileID;          uint8_t SpriteID;
 	uint8_t Orientation;     uint8_t Palette;
 	uint16_t GameX;          uint16_t GameY;
-	uint16_t FrameLastDrawn;
+	uint32_t FrameLastDrawn;
+};
+
+struct ExileParticle {
+	uint8_t ParticleType;    
+	uint16_t GameX;          uint16_t GameY;
 };
 
 class Exile
@@ -36,7 +49,7 @@ private:
 	void GenerateBackgroundGrid();
 	void GenerateSpriteSheet();
 
-	void MoveRAM(uint16_t nSource, uint16_t nTarget, uint8_t nLength);
+	void CopyRAM(uint16_t nSource, uint16_t nTarget, uint8_t nLength);
 
 	Tile TileGrid[256][256];
 	uint8_t nSpriteSheet[128][128];
@@ -49,7 +62,7 @@ public:
 	Bus BBC;
 	olc6502 cpu;
 
-	void Reset();
+	void Initialise();
 	bool LoadExileFromDisassembly(std::string sFile);
 	void PatchExileRAM();
 
@@ -57,7 +70,8 @@ public:
 
 	Obj Object(uint8_t nObjectID);
 	Tile BackgroundGrid(uint8_t x, uint8_t y);
-	
+	ExileParticle Particle(uint8_t nparticleID);
+
 	void DetermineBackground(uint8_t x, uint8_t y, uint16_t nFrameCounter);
 
 	uint8_t SpriteSheet(uint8_t i, uint8_t j);
@@ -65,4 +79,7 @@ public:
 
 	void DrawExileParticle(olc::PixelGameEngine* PGE, int32_t nScreenX, int32_t nScreenY, float fZoom, uint8_t nDoubleHeight, olc::Pixel p);
 	void DrawExileSprite(olc::PixelGameEngine* PGE, uint8_t nSpriteID, int32_t nScreenX, int32_t nScreenY, float fZoom, uint8_t nPaletteID, uint8_t nHorizontalInvert = 0, uint8_t nVerticalInvert = 0, uint8_t nTeleporting = 0, uint8_t nTimer = 0);
+
+	void Cheat_GetAllEquipment();
+	void Cheat_StoreAnyObject();
 };

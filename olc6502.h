@@ -85,7 +85,7 @@ private:
 	uint8_t GetFlag(FLAGS6502 f);
 	void SetFlag(FLAGS6502 f, bool v);
 
-	uint16_t ReloactedStackAddress(uint16_t AddressToTest); //TGD
+	uint16_t ReloactedStackAddress(uint16_t AddressToTest); //TD
 
 	struct INSTRUCTION
 	{

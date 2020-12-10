@@ -157,73 +157,29 @@ void olc6502::SetFlag(FLAGS6502 f, bool v)
 uint16_t olc6502::ReloactedStackAddress(uint16_t AddressToTest)
 {
 	switch(AddressToTest) {
-	//#0860: 00 26 d7 57 57 57 57 d6 d7 57 25 82 26 25 47 77; object_stack_type
 	case 0x0860: return 0x9600; // object_stack_type
-	//case 0x0770: return 0x9600 - 0x00f0; // object_stack_type
-
-	//#0870: 04 04 02 22 24 22 22 24 23 23 23 23 25 23 23 02; object_stack_sprite
 	case 0x0870: return 0x9700; // object_stack_sprite
-
-	//#0880: c0 64 23 23 23 26 25 22 22 22 25 e7 d7 c8 a4 7d; object_stack_x_low
-	//#0890: 7a
 	case 0x0880: return 0x9800; // object_stack_x_low
-
-	//#0891: 9b 99 00 00 00 00 00 00 00 00 00 00 00 00 00 00; object_stack_x
-	//#08a1: bc 65
 	case 0x0891: return 0x9900; // object_stack_x
-
-	//#08a3: 20 20 94 48 5c 5a ae 0f 4b 6e d2 46 ef 06 06 dc; object_stack_y_low
-	//#08b3: a4
 	case 0x08a3: return 0x9a00; // object_stack_y_low
-
-	//#08b4: 3b 3b 00 00 00 00 00 00 00 00 00 00 00 00 00 00; object_stack_y
-	//#08c4: 04 dc
 	case 0x08b4: return 0x9b00; // object_stack_y
-
-	//#08c6: 81 11 01 01 01 01 01 01 01 01 01 01 01 01 01 01; object_stack_flags
 	case 0x08c6: return 0x9c00; // object_stack_flags
-
-	//#08d6: 7e 39 a6 0b 81 fa 68 68 68 68 8e 6b 82 92 81 92; object_stack_palette
 	case 0x08d6: return 0x9d00; // object_stack_palette
-
-	//#08e6: 00 00 84 49 59 45 8c 93 36 36 3d 6d 6d 6d 6d af; object_stack_vel_x
 	case 0x08e6: return 0x9e00; // object_stack_vel_x
-
-	//#08f6: 00 10 a7 6d 6d 6d 6d 6d 6d 6d 6d 6d 6d 6d 92 20; object_stack_vel_y
 	case 0x08f6: return 0x9f00; // object_stack_vel_y
-
-	//#0906: b0 00 f0 f0 b1 b1 b1 b1 b0 b0 31 90 31 30 31 20; object_stack_target
 	case 0x0906: return 0xa000; // object_stack_target
-
-	//#0916: 02 99 02 0b 0a 88 84 cd cd 86 86 86 09 04 04 09; object_stack_tx
 	case 0x0916: return 0xa100; // object_stack_tx
-
-	//#0926: ff c8 83 d1 91 c4 c8 c7 c5 c5 c5 c6 8c 45 45 50; object_stack_energy
 	case 0x0926: return 0xa200; // object_stack_energy
-
-	//#0936: 50 3b 50 50 49 4a 4a 4a 4a 08 90 c3 86 86 86 86; object_stack_ty
 	case 0x0936: return 0xa300; // object_stack_ty
-
-	//#0946: 86 88 88 88 88 02 08 08 c9 c9 0c 0a 0d 05 0d ce; object_stack_supporting
 	case 0x0946: return 0xa400; // object_stack_supporting
-
-	//#0956: ce 0e ce 0d 0f cb 05 11 05 02 43 03 0d 05 85 05; object_stack_timer
 	case 0x0956: return 0xa500; // object_stack_timer
-
-	//#0966: 00 05 05 c3 0d 0d 0d 0d 03 0d 0d 03 0d 0d 0d 0d; object_stack_data_pointer
 	case 0x0966: return 0xa600; // object_stack_data_pointer
-
-	//#0976: 0d 0d 0d 0d 0d 0d 0d 05 c6 ce c6 c6 c6 bb c6 18; object_stack_extra
 	case 0x0976: return 0xa700; // object_stack_extra
-
 	//New stack:
 	// Starting at 0xa800 // object_stack_target_object
-
 	}
-
 	return AddressToTest;
 }
-
 
 // Addressing modes
 
