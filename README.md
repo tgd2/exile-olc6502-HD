@@ -42,7 +42,7 @@ https://sol.gfxile.net/soloud/index.html
 A few additional notes, and limitations:
   - Keys 1 to 4 activate cheats and debugging information (1 = aquire all equipment; 2 = pocket any item; 3 = debug grid; 4 = debug overlay)
   - The + and - keys on the keyboard (not numberpad) zoom the screen in and out
-  - I'm still working on emulation of the SN76489 sound chip, so sounds are currently generated using WAV samples.  I've disabled this by default in the code.  Add "//#define WITHSOUND" to main.cpp to turn it on.  Any help with the SN76489 emulation very much welcome!
+  - I'm still working on emulation of the SN76489 sound chip, so sounds are currently generated using WAV samples.  The SN76489 is getting very close, but not all the sounds are quite right yet.  I've disabled this by default in the code.  Add "//#define WITHSOUND" to main.cpp to turn it on.  Any help with the SN76489 emulation very much welcome!
   - The ship doesn't fly away when you reach the end game, as the BBC scrolling is being ignored.  I'm working on this.
   - For purists, when underwater, I've used a transparent blue overlay rather than XOR to change the sprite colour.  I would love to use XOR, but haven't worked out how to do this without a hit on performance.  Any suggestions very much welcome!
   - The "flash" works, but I can't seem to make it trigger every time.  I'm looking into this.
