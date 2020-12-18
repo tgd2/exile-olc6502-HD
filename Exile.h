@@ -1,7 +1,7 @@
 #pragma once
 #include "olcPixelGameEngine.h"
 #include "olc6502.h"
-#include "bus.h"
+#include "Bus.h"
 
 #include <array>
 #include <cstdint>

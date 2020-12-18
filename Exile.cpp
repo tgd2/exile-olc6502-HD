@@ -1,4 +1,4 @@
-#pragma once
+#include <iterator>
 #include "Exile.h"
 
 #include <array>
