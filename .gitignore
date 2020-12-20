@@ -1,3 +1,9 @@
-*.o
-exile
 exile-disassembly.txt
+exile
+Release/*
+.vs/*
+*.sln
+*.vcxproj
+*.filters
+*.user
+*.o
