@@ -364,6 +364,10 @@ void Exile::PatchExileRAM() {
 	P += "&0c5a: a0 2f      LDY #&1f \n";
 	P += "#19a7: 2f 2f 2f                   ; funny_table_19a7 \n";
 
+	// Turning off BBC sprite/background plotting:
+	P += "&0ca5: 4c c0 0c   JUMP 0cc0 \n"; // Objects
+	P += "&10d2: 4c ed 10   JUMP 0cc0 \n"; // Background strip
+
 	std::istringstream iss(P);
 	std::string sLine;
 	while (getline(iss, sLine)) ParseAssemblyLine(sLine);

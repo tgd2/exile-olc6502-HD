@@ -9,6 +9,7 @@
 #endif
 
 #include "Exile.h"
+#include <chrono>
 
 // O------------------------------------------------------------------------------O
 // | Screen constants and global variables                                        |
@@ -16,8 +17,11 @@
 uint32_t nFrameCounter = 0;
 float fGlobalTime = 0;
 float fTimeSinceLastFrame = 0;
+std::chrono::duration<double> Time_GameLoop;
+std::chrono::duration<double> Time_DrawScreen;
 
-const float SCREEN_WIDTH = 1920;   const float SCREEN_HEIGHT = 1080; // 1080p display
+const float SCREEN_WIDTH = 1920;        const float SCREEN_HEIGHT = 1080; // 1080p display
+const bool SCREEN_FULLSCREEN = false;   const bool SCREEN_VSYNC = true;
 const float SCREEN_ZOOM_MIN = 1.0f;
 const float SCREEN_ZOOM_MAX = 5.0f; 
 const float SCREEN_BORDER_SCALE = 0.3f; // To trigger scrolling
@@ -200,6 +204,9 @@ public:
 		if ((fTimeSinceLastFrame += fElapsedTime) > 0.025f) {
 			fTimeSinceLastFrame = 0.0f;
 
+			// For debugging - time game loop:
+			auto TimeStart_GameLoop = std::chrono::high_resolution_clock::now();
+
 			// For debugging - CTRL + CURSOR MOVES PLAYER THROUGH WALLS:
 			if (GetKey(olc::CTRL).bHeld) {
 				if (GetKey(olc::LEFT).bPressed || GetKey(olc::LEFT).bHeld) Game.BBC.ram[0x9900] = Game.BBC.ram[0x9900] - 1;
@@ -321,6 +328,10 @@ public:
 			}
 			// O------------------------------------------------------------------------------O
 
+			// For debugging - time game loop:
+			auto TimeStop_GameLoop = std::chrono::high_resolution_clock::now();
+			Time_GameLoop = std::chrono::duration_cast<std::chrono::nanoseconds> (TimeStop_GameLoop - TimeStart_GameLoop);
+
 		}
 		// O++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++O
 	
@@ -330,6 +341,9 @@ public:
 		// + DRAW SCREEN EVERY PGE LOOP                                                   +
 		// O++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++O
 		// O++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++O
+
+		// For debugging - time draw screen:
+		auto TimeStart_DrawScreen = std::chrono::high_resolution_clock::now();
 
 		// O------------------------------------------------------------------------------O
 		// | Blank screen + draw screen flash                                             |
@@ -465,6 +479,10 @@ public:
 			}
 		}
 
+		// For debugging - time draw screen:
+		auto TimeStop_DrawScreen = std::chrono::high_resolution_clock::now();
+		Time_DrawScreen = std::chrono::duration_cast<std::chrono::nanoseconds> (TimeStop_DrawScreen - TimeStart_DrawScreen);
+
 		// O------------------------------------------------------------------------------O
 		// | Draw debug grid and overlay                                                  |
 		// O------------------------------------------------------------------------------O
@@ -497,13 +515,16 @@ public:
 			if (nObjectCount > nObjectCountMax) nObjectCountMax = nObjectCount;
 			if (nParticleCount > nParticleCountMax) nParticleCountMax = nParticleCount;
 
-			olc::PixelGameEngine::FillRectDecal(olc::vd2d(0, 0), olc::vd2d(290, 156), olc::VERY_DARK_GREY);
+			olc::PixelGameEngine::FillRectDecal(olc::vd2d(0, 0), olc::vd2d(375, 205), olc::VERY_DARK_GREY);
 
 			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 32), "OBJECTS:   " + std::to_string(nObjectCount), olc::YELLOW, olc::vf2d(2.0f, 2.0f));
 			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 52), "MAX:       " + std::to_string(nObjectCountMax), olc::YELLOW, olc::vf2d(2.0f, 2.0f));
 
 			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 84), "PARTICLES: " + std::to_string(nParticleCount), olc::YELLOW, olc::vf2d(2.0f, 2.0f));
 			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 104), "MAX:       " + std::to_string(nParticleCountMax), olc::YELLOW, olc::vf2d(2.0f, 2.0f));
+
+			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 136), "TIME GAME: " + std::to_string(Time_GameLoop.count()), olc::GREEN, olc::vf2d(2.0f, 2.0f));
+			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 156), "TIME DRAW: " + std::to_string(Time_DrawScreen.count()), olc::GREEN, olc::vf2d(2.0f, 2.0f));
 		}
 
 		return true;
@@ -522,7 +543,7 @@ public:
 int main()
 {
 	Exile_olc6502_HD exile;
-	exile.Construct(SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1, false, true);
+	exile.Construct(SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1, SCREEN_FULLSCREEN, SCREEN_VSYNC);
 	exile.Start();
 	return 0;
 }
