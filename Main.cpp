@@ -25,6 +25,7 @@ const float SCREEN_BORDER_SCALE = 0.3f; // To trigger scrolling
 float fCanvasX = 4030;
 float fCanvasY = 1400;
 float fZoom = 2.0f;
+float fTargetZoom = 2.0f;
 
 float fCanvasWidth = SCREEN_WIDTH / fZoom;
 float fCanvasHeight = SCREEN_HEIGHT / fZoom;
@@ -164,10 +165,13 @@ public:
 		// O------------------------------------------------------------------------------O
 		// | Process view scaling                                                         |
 		// O------------------------------------------------------------------------------O
-		if (GetKey(olc::EQUALS).bHeld) fZoom = fZoom * 1.005f;
-		if (GetKey(olc::MINUS).bHeld) fZoom = fZoom / 1.005f;
-		if (fZoom > SCREEN_ZOOM_MAX) fZoom = SCREEN_ZOOM_MAX;
-		if (fZoom < SCREEN_ZOOM_MIN) fZoom = SCREEN_ZOOM_MIN;
+		if (GetKey(olc::EQUALS).bPressed) fTargetZoom += 1.0f;
+		if (GetKey(olc::MINUS).bPressed) fTargetZoom -= 1.0f;
+		if (fTargetZoom > SCREEN_ZOOM_MAX) fTargetZoom = SCREEN_ZOOM_MAX;
+		if (fTargetZoom < SCREEN_ZOOM_MIN) fTargetZoom = SCREEN_ZOOM_MIN;
+		if (fZoom > fTargetZoom) fZoom = fZoom / 1.01f;
+		if (fZoom < fTargetZoom) fZoom = fZoom * 1.01f;
+		if (std::abs(fTargetZoom - fZoom) < 0.01) fZoom = fTargetZoom;
 
 		fCanvasWidth = SCREEN_WIDTH / fZoom;
 		fCanvasHeight = SCREEN_HEIGHT / fZoom;
