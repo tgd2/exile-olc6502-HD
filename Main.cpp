@@ -1,13 +1,6 @@
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
-//#define WITHSOUND
-
-#ifdef WITHSOUND
-#include "SoLoud/soloud.h"
-#include "SoLoud/soloud_wav.h"
-#endif
-
 #include "Exile.h"
 #include <chrono>
 
@@ -44,23 +37,6 @@ std::unique_ptr<olc::Sprite> sprWaterSquare[2];  std::unique_ptr<olc::Decal> dec
 
 bool bScreenFlash = false;
 uint8_t nEarthQuakeOffset = 0;
-
-#ifdef WITHSOUND
-const int nWavesCount = 56;
-SoLoud::Soloud gSoloud; // SoLoud engine
-SoLoud::Wav gWaves[nWavesCount];  // Wave files
-float fGlobalVolume = 0.5;
-float fTimeSinceLastMushroomNoise = 0;
-
-uint16_t Sounds[nWavesCount] = { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, // Wave files named after the
-                                 0x149d, 0x14a5, 0x14ad, 0x14b5, 0x1c32, 0x2497, 0x249e, // program counter when they
-								 0x261f, 0x2a17, 0x2c34, 0x2c9e, 0x2cb4, 0x2d66, 0x2d6f, // are called
-								 0x31d0, 0x351a, 0x3ff9, 0x40be, 0x40db, 0x423e, 0x42be,
-								 0x42d4, 0x431e, 0x4356, 0x436c, 0x437f, 0x4394, 0x43f9,
-								 0x440d, 0x4425, 0x460c, 0x4638, 0x47aa, 0x480e, 0x4858,
-								 0x4928, 0x49b6, 0x4a09, 0x4a61, 0x4a7d, 0x4b93, 0x4be0,
-								 0x4c61, 0x4d2a, 0x4d33, 0x4e2d, 0x4ea9, 0x4eb0, 0x4f57 };
-#endif
 
 olc::Key Keys[39] = { olc::Key::D /* D = Dummy Key */, olc::ESCAPE, olc::F1, olc::F2, olc::F3, olc::F4, olc::F5, olc::F6, olc::F7, olc::F8, olc::Key::D, olc::Key::D,
 			  olc::Key::G, olc::SPACE, olc::Key::I, olc::Key::D, olc::Key::D, olc::Key::D, olc::Key::D, olc::Key::K, olc::Key::O, olc::Key::OEM_4 /* '[' */,
@@ -110,18 +86,6 @@ public:
 	{
 		Clear(olc::BLACK);
 
-		#ifdef WITHSOUND
-		// Initialise sound:
-		gSoloud.init();
-		gSoloud.setMaxActiveVoiceCount(32);
-		for (int nSound = 0; nSound < nWavesCount; nSound++) {
-			std::string sFilePathName = "./Sounds/" + hex(Sounds[nSound], 4) + ".wav";
-			const char* c = sFilePathName.c_str();
-			gWaves[nSound].load(c);
-			gWaves[nSound].setInaudibleBehavior(false, false); // Play now or never!
-		}
-		#endif
-
 		// Setup water sprites:
 		for (int i = 0; i < 2; i++) {
 			olc::Pixel nCol;
@@ -157,11 +121,6 @@ public:
 		if (GetKey(olc::K2).bPressed) Game.Cheat_StoreAnyObject();
 		if (GetKey(olc::K3).bPressed) bShowDebugGrid = !bShowDebugGrid;
 		if (GetKey(olc::K4).bPressed) bShowDebugOverlay = !bShowDebugOverlay;
-
-		#ifdef WITHSOUND
-		if (nFrameCounter == 20) gSoloud.playClocked(fGlobalTime, gWaves[0], fGlobalVolume); // Welcome to the world of Exile
-		fTimeSinceLastMushroomNoise = +fElapsedTime;
-		#endif
 
 		fGlobalTime = +fElapsedTime;
 		nFrameCounter = (nFrameCounter + 1) % 0xFFFF;
@@ -220,11 +179,6 @@ public:
 			// | Run BBC game loop                                                            |
 			// O------------------------------------------------------------------------------O
 			bScreenFlash = false;
-			#ifdef WITHSOUND
-			uint8_t nSoundData_Low = 0;
-			uint8_t nSoundData_High = 0;
-			uint16_t nSoundData = 0;
-			#endif
 
 			Game.BBC.cpu.pc = GAME_RAM_STARTGAMELOOP;
 			do {
@@ -234,62 +188,6 @@ public:
 				// Check for special program counters:
 				if (Game.BBC.cpu.pc == GAME_RAM_SCREENFLASH) bScreenFlash = (Game.BBC.cpu.a == 0); // Screen flash if A = 0
 				if (Game.BBC.cpu.pc == GAME_RAM_EARTHQUAKE) nEarthQuakeOffset = (Game.BBC.cpu.a & 1); // Screen shift if A = 1
-
-				// O------------------------------------------------------------------------------O
-				// Process sounds - TEMPORARY CODE
-				// O------------------------------------------------------------------------------O
-				#ifdef WITHSOUND
-				if (Game.BBC.cpu.pc == 0x1405) nSoundData_Low = (Game.BBC.cpu.a);
-				if (Game.BBC.cpu.pc == 0x140c) nSoundData_High = (Game.BBC.cpu.a);
-
-				if ((nSoundData_Low != 0) && (nSoundData_High != 0)) {
-					nSoundData = (nSoundData_High << 8) | nSoundData_Low;
-					nSoundData -= 2; // We want the start of call to play_sound
-
-					// Use Master samples, where they exist:
-					if (nSoundData == 0x2497) nSoundData = 1 + rand() % 4; // Ignore 0x249e
-					if (nSoundData == 0x4858) nSoundData = 5;
-					if (nSoundData == 0x480e) nSoundData = 6;
-
-					nSoundData_Low = 0;
-					nSoundData_High = 0;
-				}
-
-				if ((Game.BBC.cpu.pc == 0x141c) && (nSoundData != 0)) {
-					int nSample = -1;
-					uint8_t nDistanceFromSound = Game.BBC.cpu.a;
-
-					// Reduce volume / ignore lounder sounds:
-					if (nSoundData == 0x261f) nDistanceFromSound = nDistanceFromSound | 0xf0; // Fire - loud static
-					if (nSoundData == 0x43f9) nDistanceFromSound = nDistanceFromSound | 0xf0; // Hover ball
-					if ((nDistanceFromSound != 0) && (nSoundData == 0x440d)) nDistanceFromSound = nDistanceFromSound | 0xf0; // Teleport
-					if (nSoundData == 0x460c) nDistanceFromSound = nDistanceFromSound | 0xf0; // Imp
-					if (nSoundData == 0x4f57) nDistanceFromSound = nDistanceFromSound | 0xf0; // Bee
-					if (nSoundData == 0x4c61) nDistanceFromSound = nDistanceFromSound | 0xf0; // ? - loud static					
-
-					for (int nSound = 0; nSound < nWavesCount; nSound++) {
-						if (Sounds[nSound] == nSoundData) nSample = nSound;
-					}
-					if (nSample != -1) {
-						if (nDistanceFromSound < 2) nDistanceFromSound = 0;
-						else nDistanceFromSound -= 2;
-						float fVolume = fGlobalVolume * (0xff - nDistanceFromSound) / 0xff;
-
-						if (nSoundData == 0x3ff9) { // Mushroom noise
-							fVolume = fVolume / 4.0f;
-							if (fTimeSinceLastMushroomNoise > 1.0f) {
-								gSoloud.playClocked(fGlobalTime, gWaves[nSample], fVolume);
-								fTimeSinceLastMushroomNoise = 0.0f;
-							}
-						}
-						else { // All other sounds
-							gSoloud.playClocked(fGlobalTime, gWaves[nSample], fVolume);
-						}
-					}
-					nSoundData = 0;
-				}
-				#endif
-				// O------------------------------------------------------------------------------O
 
 			} while (Game.BBC.cpu.pc != GAME_RAM_STARTGAMELOOP);
 			// O------------------------------------------------------------------------------O
@@ -526,15 +424,8 @@ public:
 			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 136), "TIME GAME: " + std::to_string(Time_GameLoop.count()), olc::GREEN, olc::vf2d(2.0f, 2.0f));
 			olc::PixelGameEngine::DrawStringDecal(olc::vd2d(32, 156), "TIME DRAW: " + std::to_string(Time_DrawScreen.count()), olc::GREEN, olc::vf2d(2.0f, 2.0f));
 		}
+		// O------------------------------------------------------------------------------O
 
-		return true;
-	}
-
-	bool OnUserDestroy()
-	{
-		#ifdef WITHSOUND
-		gSoloud.deinit();
-		#endif
 		return true;
 	}
 
