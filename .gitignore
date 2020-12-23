@@ -1,6 +1,7 @@
 exile-disassembly.txt
 exile
 Release/*
+Debug/*
 .vs/*
 *.sln
 *.vcxproj
