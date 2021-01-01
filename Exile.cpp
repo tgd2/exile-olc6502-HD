@@ -361,8 +361,11 @@ void Exile::PatchExileRAM() {
 	P += "&ff3a: 4c 42 27   JMP 2742        ; JUMP BACK \n";
 
 	// Radius:
-	P += "&0c5a: a0 2f      LDY #&1f \n";
-	P += "#19a7: 2f 2f 2f                   ; funny_table_19a7 \n";
+	P += "&1143f: e6 9b     INC & 9b; radius \n"; // Now making it a *larger* radius in x direction, as wider screen:
+	P += "& 1145: e6 9b     INC & 9b; radius \n";
+
+	P += "&0c5a: a0 0a      LDY #&1f \n"; // And slightly increasing the radius within which objects are created and destroyed:
+	P += "#19a7: 0a 0f 0a           ; funny_table_19a7 \n"; 
 
 	// Turning off BBC sprite/background plotting:
 	P += "&0ca5: 4c c0 0c   JUMP 0cc0 \n"; // Objects

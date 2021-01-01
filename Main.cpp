@@ -13,19 +13,16 @@ float fTimeSinceLastFrame = 0;
 std::chrono::duration<double> Time_GameLoop;
 std::chrono::duration<double> Time_DrawScreen;
 
-const float SCREEN_WIDTH = 1920;        const float SCREEN_HEIGHT = 1080; // 1080p display
+const float SCREEN_WIDTH = 1280;        const float SCREEN_HEIGHT = 720; // 720p display
 const bool SCREEN_FULLSCREEN = false;   const bool SCREEN_VSYNC = true;
-const float SCREEN_ZOOM_MIN = 1.0f;
-const float SCREEN_ZOOM_MAX = 5.0f; 
+const float SCREEN_ZOOM = 2.0f;
 const float SCREEN_BORDER_SCALE = 0.3f; // To trigger scrolling
 
-float fCanvasX = 4030;
-float fCanvasY = 1400;
-float fZoom = 2.0f;
-float fTargetZoom = 2.0f;
+float fCanvasX = 4350;
+float fCanvasY = 1570;
 
-float fCanvasWidth = SCREEN_WIDTH / fZoom;
-float fCanvasHeight = SCREEN_HEIGHT / fZoom;
+float fCanvasWidth = SCREEN_WIDTH / SCREEN_ZOOM;
+float fCanvasHeight = SCREEN_HEIGHT / SCREEN_ZOOM;
 float fCanvasOffsetX = (SCREEN_WIDTH - fCanvasWidth) / 2.0f;
 float fCanvasOffsetY = (SCREEN_HEIGHT - fCanvasHeight) / 2.0f;
 
@@ -72,13 +69,13 @@ public:
 	float ScreenCoordinateX(float GameCoordinateX) {
 		float x = GameCoordinateX - fCanvasX - fCanvasOffsetX - (fScrollShiftX * fTimeSinceLastFrame / 0.025f);
 		x += nEarthQuakeOffset * 4; // Shift screen in event of earthquake
-		x = x * fZoom;
+		x = x * SCREEN_ZOOM;
 		return x;
 	}
 
 	float ScreenCoordinateY(float GameCoordinateY) {
 		float y = GameCoordinateY - fCanvasY - fCanvasOffsetY - (fScrollShiftY * fTimeSinceLastFrame / 0.025f);
-		y = y * fZoom;
+		y = y * SCREEN_ZOOM;
 		return y;
 	}
 
@@ -124,23 +121,6 @@ public:
 
 		fGlobalTime = +fElapsedTime;
 		nFrameCounter = (nFrameCounter + 1) % 0xFFFF;
-
-		// O------------------------------------------------------------------------------O
-		// | Process view scaling                                                         |
-		// O------------------------------------------------------------------------------O
-		if (GetKey(olc::EQUALS).bPressed) fTargetZoom += 1.0f;
-		if (GetKey(olc::MINUS).bPressed) fTargetZoom -= 1.0f;
-		if (fTargetZoom > SCREEN_ZOOM_MAX) fTargetZoom = SCREEN_ZOOM_MAX;
-		if (fTargetZoom < SCREEN_ZOOM_MIN) fTargetZoom = SCREEN_ZOOM_MIN;
-		if (fZoom > fTargetZoom) fZoom = fZoom / 1.01f;
-		if (fZoom < fTargetZoom) fZoom = fZoom * 1.01f;
-		if (std::abs(fTargetZoom - fZoom) < 0.01) fZoom = fTargetZoom;
-
-		fCanvasWidth = SCREEN_WIDTH / fZoom;
-		fCanvasHeight = SCREEN_HEIGHT / fZoom;
-		fCanvasOffsetX = (SCREEN_WIDTH - fCanvasWidth) / 2.0f;
-		fCanvasOffsetY = (SCREEN_HEIGHT - fCanvasHeight) / 2.0f;
-		// O------------------------------------------------------------------------------O
 
 		// O------------------------------------------------------------------------------O
 		// | Process keys - Part 1 (capture key presses with every PGE frame)             |
@@ -256,17 +236,17 @@ public:
 		int nTileOffsetX = int((fCanvasX + fCanvasOffsetX) / GAME_TILE_WIDTH);
 		int nTileOffsetY = int((fCanvasY + fCanvasOffsetY) / GAME_TILE_HEIGHT);
 
-		for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 2); i++) { // Draw general water level:
+		for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 1); i++) { // Draw general water level:
 			int x = i + nTileOffsetX;
 			float fScreenX = ScreenCoordinateX(x * GAME_TILE_WIDTH);
 			float fScreenY = ScreenCoordinateY(Game.WaterLevel(x));
 			if (fScreenY < -GAME_TILE_HEIGHT) fScreenY = -GAME_TILE_HEIGHT;
-			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWater[0].get(), olc::vf2d(fZoom, fZoom));
+			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWater[0].get(), olc::vf2d(SCREEN_ZOOM, SCREEN_ZOOM));
 		}
 		for (int i = 0; i < Game.WaterTiles.size(); i++) { // Draw specific water tiles throughout map:
 			float fScreenX = ScreenCoordinateX(Game.WaterTiles[i].GameX * GAME_TILE_WIDTH);
 			float fScreenY = ScreenCoordinateY(Game.WaterTiles[i].GameY * GAME_TILE_HEIGHT);
-			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWaterSquare[0].get(), olc::vf2d(fZoom, fZoom));
+			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWaterSquare[0].get(), olc::vf2d(SCREEN_ZOOM, SCREEN_ZOOM));
 		}
 		// O------------------------------------------------------------------------------O
 
@@ -286,7 +266,7 @@ public:
 					this, 
 					ScreenCoordinateX(P.GameX),
 					ScreenCoordinateY(P.GameY),
-					fZoom, 
+					SCREEN_ZOOM, 
 					(P.ParticleType >> 6) & 1,
 					olc::Pixel(((nCol >> 0) & 1) * 0xFF, ((nCol >> 1) & 1) * 0xFF, ((nCol >> 2) & 1) * 0xFF));
 			}
@@ -312,7 +292,7 @@ public:
 				O.SpriteID,
 				ScreenCoordinateX(O.GameX),
 				ScreenCoordinateY(O.GameY),
-				fZoom,
+				SCREEN_ZOOM,
 				O.Palette,
 				O.HorizontalFlip,
 				O.VerticalFlip,
@@ -326,25 +306,25 @@ public:
 		// O------------------------------------------------------------------------------O
 		// | Draw "foreground" water (transparent)                                        |
 		// O------------------------------------------------------------------------------O
-		for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 2); i++) { // Draw general water level:
+		for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 1); i++) { // Draw general water level:
 			int x = i + nTileOffsetX;
 			float fScreenX = ScreenCoordinateX(x * GAME_TILE_WIDTH);
 			float fScreenY = ScreenCoordinateY(Game.WaterLevel(x));
 			if (fScreenY < -GAME_TILE_HEIGHT) fScreenY = -GAME_TILE_HEIGHT;
-			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWater[1].get(), olc::vf2d(fZoom, fZoom));
+			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWater[1].get(), olc::vf2d(SCREEN_ZOOM, SCREEN_ZOOM));
 		}
 		for (int i = 0; i < Game.WaterTiles.size(); i++) { // Draw specific water tiles throughout map:
 			float fScreenX = ScreenCoordinateX(Game.WaterTiles[i].GameX * GAME_TILE_WIDTH);
 			float fScreenY = ScreenCoordinateY(Game.WaterTiles[i].GameY * GAME_TILE_HEIGHT);
-			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWaterSquare[1].get(), olc::vf2d(fZoom, fZoom));
+			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWaterSquare[1].get(), olc::vf2d(SCREEN_ZOOM, SCREEN_ZOOM));
 		}
 		// O------------------------------------------------------------------------------O
 
 		// O------------------------------------------------------------------------------O
 		// | Draw background map                                                          |
 		// O------------------------------------------------------------------------------O
-		for (int j = 0; j < (fCanvasWidth / GAME_TILE_HEIGHT + 2); j++) {
-			for (int i = 0; i < (fCanvasWidth / GAME_TILE_WIDTH + 2); i++) {
+		for (int j = -1; j < (fCanvasHeight / GAME_TILE_HEIGHT + 1); j++) {
+			for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 1); i++) {
 
 				int x = i + nTileOffsetX; // Set x and clamp
 				float fTileShiftX = 0;
@@ -366,7 +346,7 @@ public:
 					Game.DrawExileSprite(
 						this,
 						Game.BackgroundGrid(x, y).SpriteID,
-						fScreenX, fScreenY, fZoom,
+						fScreenX, fScreenY, SCREEN_ZOOM,
 						Game.BackgroundGrid(x, y).Palette,
 						HorizontalFlip,
 						VerticalFlip);
@@ -385,8 +365,8 @@ public:
 		// | Draw debug grid and overlay                                                  |
 		// O------------------------------------------------------------------------------O
 		if (bShowDebugGrid) {
-			for (int j = 0; j < (fCanvasWidth / GAME_TILE_HEIGHT + 2); j++) {
-				for (int i = 0; i < (fCanvasWidth / GAME_TILE_WIDTH + 2); i++) {
+			for (int j = -1; j < (fCanvasWidth / GAME_TILE_HEIGHT + 1); j++) {
+				for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 1); i++) {
 					int x = i + nTileOffsetX;
 					float fScreenX = ScreenCoordinateX(x * GAME_TILE_WIDTH);
 					int y = j + nTileOffsetY;
@@ -396,13 +376,13 @@ public:
 				}
 			}
 
-			for (int i = 0; i < (fCanvasWidth / GAME_TILE_WIDTH + 2); i++) {
+			for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 1); i++) {
 				int x = i + nTileOffsetX;
 				float fScreenX = ScreenCoordinateX(x * GAME_TILE_WIDTH);
 				olc::PixelGameEngine::FillRectDecal(olc::vd2d(fScreenX, 0), olc::vd2d(1, SCREEN_HEIGHT), olc::WHITE);
 			}
 
-			for (int j = 0; j < (fCanvasWidth / GAME_TILE_HEIGHT + 2); j++) {
+			for (int j = -1; j < (fCanvasWidth / GAME_TILE_HEIGHT + 1); j++) {
 				int y = j + nTileOffsetY;
 				float fScreenY = ScreenCoordinateY(y * GAME_TILE_HEIGHT);
 				olc::PixelGameEngine::FillRectDecal(olc::vd2d(0, fScreenY), olc::vd2d(SCREEN_WIDTH, 1), olc::WHITE);
