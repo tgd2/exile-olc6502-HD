@@ -1,6 +1,6 @@
 # exile-olc6502-HD
 
-Experimental emulation of Exile on the BBC Micro using Javidx9's olc 6502 emulator, running at 1080p 144Hz
+Experimental emulation of Exile on the BBC Micro using Javidx9's olc 6502 emulator, running at 720p 144Hz
 
 **Note: This project has been done for fun and educational purposes only.  To actually play BBC Exile, I recommend using a full BBC emulator such as BeebEm (http://www.mkw.me.uk/beebem/) or JSBeeb (https://bbc.godbolt.org/).**
 
@@ -41,12 +41,12 @@ SoLoud sound libraries:
 
 https://sol.gfxile.net/soloud/index.html
 
-A few additional notes, and limitations:
+Additional notes, and limitations:
   - Keys 1 to 4 activate cheats and debugging information (1 = aquire all equipment; 2 = pocket any item; 3 = debug grid; 4 = debug overlay)
-  - The + and - keys on the keyboard (not numberpad) zoom the screen in and out
   - The SN76489 sound chip is not emulated.
   - The ship doesn't fly away when you reach the end game, as the BBC scrolling is being ignored.
   - When underwater, I've used a transparent blue overlay rather than XOR to change the sprite colour.
+  - The emulator was previously running at 1080p, but I've reduced the default to 720p.
   - I've made a small number of "hacky" changes to the olc6502.
 
 TGD
