@@ -2,7 +2,7 @@
 
 Experimental emulation of Exile on the BBC Micro using Javidx9's olc 6502 emulator, running at 720p 144Hz
 
-**Note: This project has been done for fun and educational purposes only.  To actually play BBC Exile, I recommend using a full BBC emulator such as BeebEm (http://www.mkw.me.uk/beebem/) or JSBeeb (https://bbc.godbolt.org/).**
+_Note: This project has been done for fun and educational purposes only.  To actually play BBC Exile, I recommend using original BBC hardware or a full BBC emulator such as BeebEm (http://www.mkw.me.uk/beebem/) or JSBeeb (https://bbc.godbolt.org/)._
 
 One of my projects during lockdown in 2020 has been to learn 6502 assembly, and to understand the code from one of my favourite games of all time - Exile on the BBC.
 
