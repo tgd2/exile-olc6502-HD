@@ -1,6 +1,8 @@
 # exile-olc6502-HD
 
-Emulation of Exile on the BBC Micro using Javidx9's olc 6502 emulator, running at 1080p 144Hz
+Experimental emulation of Exile on the BBC Micro using Javidx9's olc 6502 emulator, running at 720p 144Hz
+
+*_Note: This project has been done for fun and educational purposes only.  To actually play BBC Exile, I recommend using original BBC hardware or a full BBC emulator such as BeebEm (http://www.mkw.me.uk/beebem/) or JSBeeb (https://bbc.godbolt.org/)._*
 
 One of my projects during lockdown in 2020 has been to learn 6502 assembly, and to understand the code from one of my favourite games of all time - Exile on the BBC.
 
@@ -39,13 +41,12 @@ SoLoud sound libraries:
 
 https://sol.gfxile.net/soloud/index.html
 
-A few additional notes, and limitations:
+Additional notes, and limitations:
   - Keys 1 to 4 activate cheats and debugging information (1 = aquire all equipment; 2 = pocket any item; 3 = debug grid; 4 = debug overlay)
-  - The + and - keys on the keyboard (not numberpad) zoom the screen in and out
-  - I'm still working on emulation of the SN76489 sound chip, so sounds are currently generated using WAV samples.  The SN76489 is getting very close, but not all the sounds are quite right yet.  I've disabled this by default in the code.  Add "//#define WITHSOUND" to main.cpp to turn it on.  Any help with the SN76489 emulation very much welcome!
-  - The ship doesn't fly away when you reach the end game, as the BBC scrolling is being ignored.  I'm working on this.
-  - For purists, when underwater, I've used a transparent blue overlay rather than XOR to change the sprite colour.  I would love to use XOR, but haven't worked out how to do this without a hit on performance.  Any suggestions very much welcome!
-  - The "flash" works, but I can't seem to make it trigger every time.  I'm looking into this.
-  - I've made a small number of "hacky" changes to the olc6502.  I have on my list to tidy this up.
+  - The SN76489 sound chip is not emulated.
+  - The ship doesn't fly away when you reach the end game, as the BBC scrolling is being ignored.
+  - When underwater, I've used a transparent blue overlay rather than XOR to change the sprite colour.
+  - The emulator was previously running at 1080p, but I've reduced the default to 720p.
+  - I've made a small number of "hacky" changes to the olc6502.
 
 TGD

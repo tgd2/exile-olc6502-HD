@@ -135,6 +135,8 @@ void Exile::PatchExileRAM() {
 	P += "&ff27: 9d 00 a8   STA &a800, X    ; this_object_target_object \n";
 	P += "&ff2a: 4c c7 1d   JMP 1dc7        ; JUMP BACK \n";
 
+	P += "&1e34: 5d 00 a8   EOR &a800, X   ; object_stack_target_*OBJECT* \n"; // Updated 1 Jan 2021
+
 //	P += "&1e3c: 9d 00 a8   STA &a800, X; object_stack_target_object \n";
 	P += "&1e3c: 4c 00 fe   JMP fe00        ; JUMP TO PATCHED CODE \n";
 	P += "&fe00: 9d 00 a8   STA &a800, X    ; object_stack_target_object \n";
@@ -203,11 +205,12 @@ void Exile::PatchExileRAM() {
 	P += "&2a93: 69 80      ADC #&80        ; As now up to 128 objects \n";
 	P += "&2afb: 69 80      ADC #&80        ; As now up to 128 objects \n"; // Needed?
 	P += "&3442: a2 7f      LDX #&7f        ; As now up to 128 objects \n";
+	P += "&3c4d: 29 7f      AND #&7f        ; As now up to 128 objects \n"; // Added 1 Jan 2021
 	P += "&3c51: a0 7f      LDY #&7f        ; As now up to 128 objects \n";
 	P += "&609e: a0 7f      LDY #&7f        ; As now up to 128 objects \n"; // Not used?
 
 	// Relocating and restructuring particle stack, to give space for 127 particles
-	// And some updates, to ensure pixels are process, even if off the BBC screen
+	// And some updates, to ensure pixels are processed, even if off the BBC screen
 	P += "&202b: bd 00 88   LDA &8800, X    ; particle_stack_x_low \n";
 	P += "&2032: bd 00 8a   LDA &8a00, X    ; particle_stack_x \n";
 	P += "&2037: 18         CLC             ; Always process pixel \n";
@@ -361,8 +364,15 @@ void Exile::PatchExileRAM() {
 	P += "&ff3a: 4c 42 27   JMP 2742        ; JUMP BACK \n";
 
 	// Radius:
-	P += "&0c5a: a0 2f      LDY #&1f \n";
-	P += "#19a7: 2f 2f 2f                   ; funny_table_19a7 \n";
+	P += "&1143f: e6 9b     INC & 9b; radius \n"; // Now making it a *larger* radius in x direction, as wider screen:
+	P += "& 1145: e6 9b     INC & 9b; radius \n";
+
+	P += "&0c5a: a0 0a      LDY #&0a \n"; // And slightly increasing the radius within which objects are created and destroyed:
+	P += "#19a7: 0a 0f 0a           ; funny_table_19a7 \n"; 
+
+	// Turning off BBC sprite/background plotting:
+	P += "&0ca5: 4c c0 0c   JUMP 0cc0 \n"; // Objects
+	P += "&10d2: 4c ed 10   JUMP 10ed \n"; // Background strip
 
 	std::istringstream iss(P);
 	std::string sLine;
