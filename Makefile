@@ -5,7 +5,7 @@ OBJS:=Bus.o Exile.o olc6502.o Main.o
 exile: $(OBJS) | exile-disassembly.txt
 	g++ -o $@ $^ -lX11 -pthread -lstdc++fs -lpng -lGL -march=native -flto
 .cpp.o:
-	g++ -c -o $@ $^ -O3 -march=skylake -flto
+	g++ -c -o $@ $^ -O3 -march=native -flto
 clean:
 	rm -f $(OBJS) exile
 
