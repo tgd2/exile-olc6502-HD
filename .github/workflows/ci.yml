@@ -1,0 +1,18 @@
+name: C++ CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    env:
+      CC: gcc-${{ matrix.gcc_version }}
+      CXX: g++-${{ matrix.gcc_version }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: install-deps
+        run : |
+            sudo apt-get update
+            sudo apt-get install g++ libx11-dev libglx-dev libpng-dev libgl-dev
+      - name: build
+        run: make -j$(nproc)
