@@ -618,14 +618,14 @@ Obj Exile::Object(uint8_t nObjectID)
 {
 	Obj O;
 
-	O.ObjectType = BBC.ram[0x9600 + nObjectID]; // object_stack_type
-	O.SpriteID = BBC.ram[0x9700 + nObjectID]; // object_stack_sprite
-	O.GameX = (BBC.ram[0x9800 + nObjectID] | (BBC.ram[0x9900 + nObjectID] << 8)) / 8; // (object_stack_x_low | object_stack_x << 8) / 8
-	O.GameY = (BBC.ram[0x9a00 + nObjectID] | (BBC.ram[0x9b00 + nObjectID] << 8)) / 8; // (object_stack_y_low | object_stack_y << 8) / 8
-	O.Palette = BBC.ram[0x9d00 + nObjectID]; // object_stack_palette
-	O.Timer = BBC.ram[0xa500 + nObjectID]; // object_stack_timer
+	O.ObjectType = BBC.ram[0x0860 + nObjectID]; // object_stack_type
+	O.SpriteID = BBC.ram[0x0870 + nObjectID]; // object_stack_sprite
+	O.GameX = (BBC.ram[0x0880 + nObjectID] | (BBC.ram[0x0891 + nObjectID] << 8)) / 8; // (object_stack_x_low | object_stack_x << 8) / 8
+	O.GameY = (BBC.ram[0x08a3 + nObjectID] | (BBC.ram[0x08b4 + nObjectID] << 8)) / 8; // (object_stack_y_low | object_stack_y << 8) / 8
+	O.Palette = BBC.ram[0x08d6 + nObjectID]; // object_stack_palette
+	O.Timer = BBC.ram[0x0956 + nObjectID]; // object_stack_timer
 
-	uint8_t nObjFlags = BBC.ram[0x9c00 + nObjectID]; // object_stack_flags
+	uint8_t nObjFlags = BBC.ram[0x08c6 + nObjectID]; // object_stack_flags
 	O.Teleporting = (nObjFlags >> 4) & 1; // Bit 4: Teleporting
 	O.HorizontalFlip = (nObjFlags >> 7) & 1; // Bit 7: Horizontal invert
 	O.VerticalFlip = (nObjFlags >> 6) & 1; // Bit 6: Vertical invert
@@ -636,9 +636,9 @@ Obj Exile::Object(uint8_t nObjectID)
 ExileParticle Exile::Particle(uint8_t nparticleID) {
 	ExileParticle P;
 
-	P.GameX = (BBC.ram[0x8800 + nparticleID] | (BBC.ram[0x8a00 + nparticleID] << 8)) / 8; // (particle_stack_x_low | particle_stack_x << 8) / 8
-	P.GameY = (BBC.ram[0x8900 + nparticleID] | (BBC.ram[0x8b00 + nparticleID] << 8)) / 8; // (particle_stack_y_low | particle_stack_y << 8) / 8
-	P.ParticleType = BBC.ram[0x8d00 + nparticleID]; // particle_stack_type
+	P.GameX = (BBC.ram[0x28d8 + nparticleID * 8] | (BBC.ram[0x28da + nparticleID * 8] << 8)) / 8; // (particle_stack_x_low | particle_stack_x << 8) / 8
+	P.GameY = (BBC.ram[0x28d9 + nparticleID * 8] | (BBC.ram[0x28db + nparticleID * 8] << 8)) / 8; // (particle_stack_y_low | particle_stack_y << 8) / 8
+	P.ParticleType = BBC.ram[0x28dd + nparticleID * 8]; // particle_stack_type
 
 	return P;
 }
@@ -651,43 +651,12 @@ Tile Exile::BackgroundGrid(uint8_t x, uint8_t y)
 
 void Exile::DetermineBackground(uint8_t x, uint8_t y, uint16_t nFrameCounter) {
 
-	//Clawed robots:
-	if ((x == 0x75) && (y == 0x87)) return; // To prevent spawning magenta clawed robot too soon
-	if ((x == 0x2e) && (y == 0xd6)) return; // To prevent spawning green clawed robot too soon
-	// Note: cyan and red clawed robot behave well already
-
-	//Birds:
-	if ((x == 0xb0) && (y == 0x4e)) return;
-	//if ((x == 0x77) && (y == 0x54)) return; // Tree
-	//if ((x == 0x64) && (y == 0x80)) return; // Tree
-	if ((x == 0x80) && (y == 0x88)) return;
-	//if ((x == 0x62) && (y == 0x72)) return; // Tree
-	if ((x == 0xe4) && (y == 0xb4)) return;
-	//if ((x == 0x62) && (y == 0xa2)) return; // Tree
-	//if ((x == 0x63) && (y == 0xb5)) return; // Tree
-	if ((x == 0x47) && (y == 0x59)) return;
-	if ((x == 0x84) && (y == 0x70)) return;
-	if ((x == 0x9e) && (y == 0x69)) return;
-
-	//Imps:
-	//if ((x == 0x64) && (y == 0x94)) return; //Tree
-	//if ((x == 0x47) && (y == 0xc0)) return; //Tree
-	if ((x == 0x87) && (y == 0xbf)) return;
-
-	//if ((x == 0x2b) && (y == 0x80)) return; //Tree
-	if ((x == 0x80) && (y == 0x75)) return;
-	//if ((x == 0x8a) && (y == 0x78)) return; //Tree
-
-	//if ((x == 0xa7) && (y == 0x9a)) return; //Tree
-	//if ((x == 0xc6) && (y == 0xbe)) return; //Tree
-	//if ((x == 0x64) && (y == 0xc6)) return; //Tree
-
 	if (TileGrid[x][y].FrameLastDrawn != (nFrameCounter - 1)) {
 		// Save CPU state:  
 		uint8_t a_ = BBC.cpu.a; uint8_t x_ = BBC.cpu.x; uint8_t y_ = BBC.cpu.x;
 		uint16_t stkp_ = BBC.cpu.stkp; uint16_t pc_ = BBC.cpu.pc;
 
-		// Set CPU state:  
+		// Set CPU state:
 		BBC.cpu.a = 0x00; BBC.cpu.x = 0x00; BBC.cpu.y = 0x00;
 		BBC.cpu.stkp = 0xff;  BBC.cpu.pc = 0xffa0;
 

@@ -3,6 +3,7 @@ exile
 Release/*
 Debug/*
 .vs/*
+x64/*
 *.sln
 *.vcxproj
 *.filters

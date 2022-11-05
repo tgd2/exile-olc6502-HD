@@ -105,7 +105,7 @@ public:
 
 		// Load Exile RAM from disassembly, and patch to run in HD:
 		Game.LoadExileFromDisassembly("exile-disassembly.txt"); // www.level7.org.uk/miscellany/exile-disassembly.txt
-		Game.PatchExileRAM();
+		//Game.PatchExileRAM();
 		Game.Initialise();
 
 		return true;
@@ -277,7 +277,7 @@ public:
 		// | Draw game objects                                                            |
 		// O------------------------------------------------------------------------------O
 		int nObjectCount = 0;
-		for (int nObjectID = 0; nObjectID < 128; nObjectID++) {
+		for (int nObjectID = 0; nObjectID < 16; nObjectID++) {
 			Obj O;
 			O = Game.Object(nObjectID);
 
@@ -299,7 +299,7 @@ public:
 				O.Teleporting,
 				O.Timer);
 
-			if (Game.BBC.ram[0x9b00 + nObjectID] != 0) nObjectCount++; // For debugging
+			if (Game.BBC.ram[0x08b4 + nObjectID] != 0) nObjectCount++; // For debugging
 		}
 		// O------------------------------------------------------------------------------O
 

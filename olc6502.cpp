@@ -156,28 +156,28 @@ void olc6502::SetFlag(FLAGS6502 f, bool v)
 
 uint16_t olc6502::ReloactedStackAddress(uint16_t AddressToTest)
 {
-	switch(AddressToTest) {
-	case 0x0860: return 0x9600; // object_stack_type
-	case 0x0870: return 0x9700; // object_stack_sprite
-	case 0x0880: return 0x9800; // object_stack_x_low
-	case 0x0891: return 0x9900; // object_stack_x
-	case 0x08a3: return 0x9a00; // object_stack_y_low
-	case 0x08b4: return 0x9b00; // object_stack_y
-	case 0x08c6: return 0x9c00; // object_stack_flags
-	case 0x08d6: return 0x9d00; // object_stack_palette
-	case 0x08e6: return 0x9e00; // object_stack_vel_x
-	case 0x08f6: return 0x9f00; // object_stack_vel_y
-	case 0x0906: return 0xa000; // object_stack_target
-	case 0x0916: return 0xa100; // object_stack_tx
-	case 0x0926: return 0xa200; // object_stack_energy
-	case 0x0936: return 0xa300; // object_stack_ty
-	case 0x0946: return 0xa400; // object_stack_supporting
-	case 0x0956: return 0xa500; // object_stack_timer
-	case 0x0966: return 0xa600; // object_stack_data_pointer
-	case 0x0976: return 0xa700; // object_stack_extra
-	//New stack:
-	// Starting at 0xa800 // object_stack_target_object
-	}
+//	switch(AddressToTest) {
+//	case 0x0860: return 0x9600; // object_stack_type
+//	case 0x0870: return 0x9700; // object_stack_sprite
+//	case 0x0880: return 0x9800; // object_stack_x_low
+//	case 0x0891: return 0x9900; // object_stack_x
+//	case 0x08a3: return 0x9a00; // object_stack_y_low
+//	case 0x08b4: return 0x9b00; // object_stack_y
+//	case 0x08c6: return 0x9c00; // object_stack_flags
+//	case 0x08d6: return 0x9d00; // object_stack_palette
+//	case 0x08e6: return 0x9e00; // object_stack_vel_x
+//	case 0x08f6: return 0x9f00; // object_stack_vel_y
+//	case 0x0906: return 0xa000; // object_stack_target
+//	case 0x0916: return 0xa100; // object_stack_tx
+//	case 0x0926: return 0xa200; // object_stack_energy
+//	case 0x0936: return 0xa300; // object_stack_ty
+//	case 0x0946: return 0xa400; // object_stack_supporting
+//	case 0x0956: return 0xa500; // object_stack_timer
+//	case 0x0966: return 0xa600; // object_stack_data_pointer
+//	case 0x0976: return 0xa700; // object_stack_extra
+//	//New stack:
+//	// Starting at 0xa800 // object_stack_target_object
+//	}
 	return AddressToTest;
 }
 
