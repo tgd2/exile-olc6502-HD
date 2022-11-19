@@ -22,7 +22,7 @@ struct XY {
 };
 
 struct Obj {
-	uint8_t ObjectType;
+	bool IsValid;            uint8_t ObjectType;
 	uint8_t SpriteID;        uint8_t Palette;
 	uint8_t HorizontalFlip;  uint8_t VerticalFlip;  
 	uint8_t Teleporting;     uint8_t Timer;
@@ -68,7 +68,7 @@ public:
 
 	std::vector<XY> WaterTiles;
 
-	Obj Object(uint8_t nObjectID);
+	Obj Object(uint8_t nStackID, uint8_t nObjectID);
 	Tile BackgroundGrid(uint8_t x, uint8_t y);
 	ExileParticle Particle(uint8_t nparticleID);
 

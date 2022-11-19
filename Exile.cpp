@@ -386,6 +386,8 @@ void Exile::GenerateBackgroundGrid() {
 	BBC.ram[0xffa2] = 0x23;
 	BBC.ram[0xffa3] = 0xa8; //TAY 
 
+	bool bFirstTile{ true };
+
 	for (int y = 0; y < 256; y++) {
 		for (int x = 0; x < 256; x++) {
 
@@ -397,11 +399,55 @@ void Exile::GenerateBackgroundGrid() {
 			BBC.ram[0x0095] = x; //square_x
 			BBC.ram[0x0097] = y; //square_y
 
+			bool bObjectAtLocation{ false };
+			int nBackgroundObjectInfoCount{ 0 };
+
+			uint8_t nBackgroundObject_X_Index{ 0x00 };
+			uint8_t nBackgroundObject_Handler_Index{ 0x00 };
+			uint8_t nBackgroundObject_Data_Index{ 0x00 };
+			uint8_t nBackgroundObject_Type_Index{ 0x00 };
+
+			uint8_t nBackgroundObject_X{ 0x00 };
+			uint8_t nBackgroundObject_Handler{ 0x00 };
+			uint8_t nBackgroundObject_Data{ 0x00 };
+			uint8_t nBackgroundObject_Type{ 0x00 };
+
 			// Run BBC to determine background tile and palette
 			do {
 				do BBC.cpu.clock();
 				while (!BBC.cpu.complete());
+
+				// Capture background object info:
+				if (BBC.cpu.pc == 0x1749) { nBackgroundObject_X_Index = BBC.cpu.a; };
+				if (BBC.cpu.pc == 0x1754) { nBackgroundObject_Handler_Index = BBC.cpu.x; };
+				if (BBC.cpu.pc == 0x174c) { nBackgroundObject_Data_Index = BBC.cpu.a; };
+				if (BBC.cpu.pc == 0x1752) { nBackgroundObject_Type_Index = BBC.cpu.a; };
+
+				if (BBC.cpu.pc == 0x1749) { nBackgroundObject_X = BBC.ram[0x05ef + nBackgroundObject_X_Index]; };
+				if (BBC.cpu.pc == 0x1757) { nBackgroundObject_Handler = BBC.cpu.a; bObjectAtLocation = true; }; // Also flag background object exists
+				if (BBC.cpu.pc == 0x174c) { nBackgroundObject_Data = BBC.ram[0x0986 + nBackgroundObject_Data_Index]; };
+				if (BBC.cpu.pc == 0x1752) { nBackgroundObject_Type = BBC.ram[0x0a71 + nBackgroundObject_Type_Index]; };
+
 			} while (BBC.cpu.pc != 0xffa3);
+
+			// Temporary background object output
+			auto hex = [](uint32_t n, uint8_t d)
+			{
+				std::string s(d, '0');
+				for (int i = d - 1; i >= 0; i--, n >>= 4)
+					s[i] = "0123456789ABCDEF"[n & 0xF];
+				return s;
+			};
+			if (bFirstTile) { std::cout << "x_index " << "x " << "x2 " << "y " << "handler " << "data " << "type" << '\n'; bFirstTile = false; }
+			if (bObjectAtLocation) std::cout
+				<< hex(nBackgroundObject_X_Index, 2) << ' '
+				<< hex(nBackgroundObject_X, 2) << ' '
+				<< hex(BBC.ram[0x53], 2) << ' '
+				<< hex(BBC.ram[0x55], 2) << ' '
+				<< hex(nBackgroundObject_Handler, 2) << ' '
+				<< hex(nBackgroundObject_Data, 2) << ' '
+				<< hex(nBackgroundObject_Type, 2)
+				<< '\n';
 
 			TileGrid[x][y].TileID = BBC.ram[0x08]; // square_sprite
 			TileGrid[x][y].Orientation = BBC.ram[0x09]; // square_orientation
@@ -614,21 +660,49 @@ void Exile::Initialise()
 	BBC.cpu.pc = GAME_RAM_STARTGAMELOOP;
 }
 
-Obj Exile::Object(uint8_t nObjectID)
+Obj Exile::Object(uint8_t nStackID, uint8_t nObjectID)
 {
-	Obj O;
+	Obj O{};
+	uint8_t nObjFlags{};
+	uint8_t nObjEnergyAndLow{};
 
-	O.ObjectType = BBC.ram[0x0860 + nObjectID]; // object_stack_type
-	O.SpriteID = BBC.ram[0x0870 + nObjectID]; // object_stack_sprite
-	O.GameX = (BBC.ram[0x0880 + nObjectID] | (BBC.ram[0x0891 + nObjectID] << 8)) / 8; // (object_stack_x_low | object_stack_x << 8) / 8
-	O.GameY = (BBC.ram[0x08a3 + nObjectID] | (BBC.ram[0x08b4 + nObjectID] << 8)) / 8; // (object_stack_y_low | object_stack_y << 8) / 8
-	O.Palette = BBC.ram[0x08d6 + nObjectID]; // object_stack_palette
-	O.Timer = BBC.ram[0x0956 + nObjectID]; // object_stack_timer
+	switch (nStackID)
+	{
+	case 1:
+		O.IsValid = true;
+		O.ObjectType = BBC.ram[0x0860 + nObjectID]; // object_stack_type
+		O.SpriteID = BBC.ram[0x0870 + nObjectID]; // object_stack_sprite
+		O.GameX = (BBC.ram[0x0880 + nObjectID] | (BBC.ram[0x0891 + nObjectID] << 8)) / 8; // (object_stack_x_low | object_stack_x << 8) / 8
+		O.GameY = (BBC.ram[0x08a3 + nObjectID] | (BBC.ram[0x08b4 + nObjectID] << 8)) / 8; // (object_stack_y_low | object_stack_y << 8) / 8
+		O.Palette = BBC.ram[0x08d6 + nObjectID]; // object_stack_palette
+		O.Timer = BBC.ram[0x0956 + nObjectID]; // object_stack_timer
 
-	uint8_t nObjFlags = BBC.ram[0x08c6 + nObjectID]; // object_stack_flags
-	O.Teleporting = (nObjFlags >> 4) & 1; // Bit 4: Teleporting
-	O.HorizontalFlip = (nObjFlags >> 7) & 1; // Bit 7: Horizontal invert
-	O.VerticalFlip = (nObjFlags >> 6) & 1; // Bit 6: Vertical invert
+		nObjFlags = BBC.ram[0x08c6 + nObjectID]; // object_stack_flags
+		O.Teleporting = (nObjFlags >> 4) & 1; // Bit 4: Teleporting
+		O.HorizontalFlip = (nObjFlags >> 7) & 1; // Bit 7: Horizontal invert
+		O.VerticalFlip = (nObjFlags >> 6) & 1; // Bit 6: Vertical invert
+		break;
+
+	case 2:
+		O.IsValid = (BBC.ram[0x0b12 + nObjectID] !=0); // secondary_object_stack_y
+		O.ObjectType = BBC.ram[0x0b32 + nObjectID]; // secondary_object_stack_type
+		O.SpriteID = BBC.ram[0x028a + O.ObjectType]; // object_sprite_lookup
+		nObjEnergyAndLow = BBC.ram[0x0b53 + nObjectID];
+		O.GameX = ((nObjEnergyAndLow & 0b00001100) << 4 | (BBC.ram[0x0af2 + nObjectID] << 8)) / 8; // (secondary_object_stack_energy_and_low | secondary_object_stack_x << 8) / 8
+		O.GameY = ((nObjEnergyAndLow & 0b00000011) << 6 | (BBC.ram[0x0b12 + nObjectID] << 8)) / 8; // (secondary_object_stack_energy_and_low | secondary_object_stack_y << 8) / 8
+		O.Palette = BBC.ram[0x02ef + O.ObjectType] & 0x7f; // object_palette_lookup
+		O.Timer = 0; // ?
+
+		nObjFlags = 0x05;
+		O.Teleporting = (nObjFlags >> 4) & 1; // Bit 4: Teleporting
+		O.HorizontalFlip = (nObjFlags >> 7) & 1; // Bit 7: Horizontal invert
+		O.VerticalFlip = (nObjFlags >> 6) & 1; // Bit 6: Vertical invert
+		break;
+
+	case 3:
+		O.IsValid = false;
+		break;
+	}
 
 	return O;
 }

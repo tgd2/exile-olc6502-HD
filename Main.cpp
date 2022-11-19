@@ -193,7 +193,7 @@ public:
 			fScrollShiftX = 0;
 			fScrollShiftY = 0;
 
-			Obj O = Game.Object(0); // Player
+			Obj O = Game.Object(1, 0); // Player
 			if (Game.BBC.ram[GAME_RAM_PLAYER_TELEPORTING] == 0) { // Not teleporting
 				float fCanvasBorderX = fCanvasWidth * SCREEN_BORDER_SCALE; // Scroll if player moves within border
 				float fCanvasBorderY = fCanvasHeight * SCREEN_BORDER_SCALE; // Scroll if player moves within border
@@ -274,12 +274,12 @@ public:
 		// O------------------------------------------------------------------------------O
 
 		// O------------------------------------------------------------------------------O
-		// | Draw game objects                                                            |
+		// | Draw game objects - Primary stack                                            |
 		// O------------------------------------------------------------------------------O
 		int nObjectCount = 0;
 		for (int nObjectID = 0; nObjectID < 16; nObjectID++) {
 			Obj O;
-			O = Game.Object(nObjectID);
+			O = Game.Object(1, nObjectID);
 
 			if ((nObjectID == 0) || (nObjectID == Game.BBC.ram[0xdd])) {
 				// Offset the scroll shift for player (and objects held) to avoid judder
@@ -300,6 +300,30 @@ public:
 				O.Timer);
 
 			if (Game.BBC.ram[0x08b4 + nObjectID] != 0) nObjectCount++; // For debugging
+		}
+		// O------------------------------------------------------------------------------O
+
+		// O------------------------------------------------------------------------------O
+		// | Draw game objects - Secondary stack                                          |
+		// O------------------------------------------------------------------------------O
+		for (int nObjectID = 0; nObjectID < 32; nObjectID++) {
+			Obj O;
+			O = Game.Object(2, nObjectID);
+
+			if (O.IsValid)
+			{
+				Game.DrawExileSprite(
+					this,
+					O.SpriteID,
+					ScreenCoordinateX(O.GameX),
+					ScreenCoordinateY(O.GameY),
+					SCREEN_ZOOM,
+					O.Palette - 1,
+					O.HorizontalFlip,
+					O.VerticalFlip,
+					O.Teleporting,
+					O.Timer);
+			}
 		}
 		// O------------------------------------------------------------------------------O
 
