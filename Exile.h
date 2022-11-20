@@ -34,6 +34,10 @@ struct Tile {
 	uint8_t Orientation;     uint8_t Palette;
 	uint16_t GameX;          uint16_t GameY;
 	uint32_t FrameLastDrawn;
+//	bool IsBackgroundObject;
+//	uint8_t nBackgroundObject_Handler_Index{ 0 };
+//	uint8_t nBackgroundObject_Data_Index{ 0 };
+//	uint8_t nBackgroundObject_Type_Index{ 0 };
 };
 
 struct ExileParticle {
@@ -51,7 +55,7 @@ private:
 
 	void CopyRAM(uint16_t nSource, uint16_t nTarget, uint8_t nLength);
 
-	Tile TileGrid[256][256];
+	std::array <std::array<Tile, 256>, 256> TileGrid;
 	uint8_t nSpriteSheet[128][128];
 
 	std::map<uint32_t, olc::Decal*> SpriteDecals;
