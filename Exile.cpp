@@ -632,11 +632,8 @@ void Exile::DrawExileSprite(olc::PixelGameEngine* PGE,
 	// Draw sprite (decal)
 	//---------------------------------------------------------------------------------
 	// Apply horizontal and vertical flip
-	float fHorizontalZoom = fZoom * 1.005; // 1.005 multiple seems to make the scrolling smoother?
-	float fVerticalZoom = fZoom * 1.005; // 1.005 multiple seems to make the scrolling smoother?
-
-	if (int(fHorizontalZoom) != fHorizontalZoom) fZoom * 1.005; // If non-integer, scale by an extra 1.005 to help avoid gaps in tiles;
-	if (int(fVerticalZoom) != fVerticalZoom) fZoom * 1.005; // If non-integer, scale by an extra 1.005 to help avoid gaps in tiles;
+	float fHorizontalZoom = fZoom;
+	float fVerticalZoom = fZoom;
 
 	if (nHorizontalInvert == 1) {
 		nScreenX = nScreenX + round(fHorizontalZoom * (sprSprite->width));

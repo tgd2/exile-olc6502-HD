@@ -146,14 +146,11 @@ public:
 			// For debugging - time game loop:
 			auto TimeStart_GameLoop = std::chrono::high_resolution_clock::now();
 
-			// For debugging - CTRL + CURSOR MOVES PLAYER THROUGH WALLS:
-			if (GetKey(olc::CTRL).bHeld) {
-				if (GetKey(olc::LEFT).bPressed || GetKey(olc::LEFT).bHeld) Game.BBC.ram[0x9900] = Game.BBC.ram[0x9900] - 1;
-				if (GetKey(olc::RIGHT).bPressed || GetKey(olc::RIGHT).bHeld) Game.BBC.ram[0x9900] = Game.BBC.ram[0x9900] + 1;
-
-				if (GetKey(olc::UP).bPressed || GetKey(olc::UP).bHeld) Game.BBC.ram[0x9b00] = Game.BBC.ram[0x9b00] - 1;
-				if (GetKey(olc::DOWN).bPressed || GetKey(olc::DOWN).bHeld) Game.BBC.ram[0x9b00] = Game.BBC.ram[0x9b00] + 1;
-			}
+			// For debugging - CURSOR MOVES PLAYER THROUGH WALLS:
+			if (GetKey(olc::LEFT).bPressed || GetKey(olc::LEFT).bHeld) Game.BBC.ram[0x0891] -= 1;
+			if (GetKey(olc::RIGHT).bPressed || GetKey(olc::RIGHT).bHeld) Game.BBC.ram[0x0891] += 1;;
+			if (GetKey(olc::UP).bPressed || GetKey(olc::UP).bHeld) Game.BBC.ram[0x08b4] -= 1;
+			if (GetKey(olc::DOWN).bPressed || GetKey(olc::DOWN).bHeld) Game.BBC.ram[0x08b4] += 1;
 
 			// O------------------------------------------------------------------------------O
 			// | Run BBC game loop                                                            |
