@@ -715,7 +715,7 @@ Obj Exile::Object(uint8_t nStackID, uint8_t nObjectID)
 		O.HorizontalFlip = (nObjFlags >> 7) & 1; // Bit 7: Horizontal invert
 		O.VerticalFlip = (nObjFlags >> 6) & 1; // Bit 6: Vertical invert
 
-		//if (BBC.ram[0x08e6 + nObjectID] == 0x00 && (O.GameX & 1) == 1) O.GameX -= 1; // object_stack_vel_x [TD - Temp??]
+		if (BBC.ram[0x08e6 + nObjectID] == 0x00 && (O.GameX & 1) == 1) O.GameX -= 1; // object_stack_vel_x [TD - Temp??]
 		break;
 
 	case 2:
