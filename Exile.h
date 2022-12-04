@@ -34,10 +34,11 @@ struct Tile {
 	uint8_t Orientation;     uint8_t Palette;
 	uint16_t GameX;          uint16_t GameY;
 	uint32_t FrameLastDrawn;
-//	bool IsBackgroundObject;
-//	uint8_t nBackgroundObject_Handler_Index{ 0 };
-//	uint8_t nBackgroundObject_Data_Index{ 0 };
-//	uint8_t nBackgroundObject_Type_Index{ 0 };
+	bool IsBackgroundObject{ false };
+	uint8_t nBackgroundObject_Handler_Index{ 0 };
+	uint8_t nBackgroundObject_Data_Index{ 0 };
+	uint8_t nBackgroundObject_Type_Index{ 0 };
+	Obj ObjTemp; // Temporary
 };
 
 struct ExileParticle {
@@ -55,7 +56,10 @@ private:
 
 	void CopyRAM(uint16_t nSource, uint16_t nTarget, uint8_t nLength);
 
-	std::array <std::array<Tile, 256>, 256> TileGrid;
+public: // Temporary
+	std::vector <std::array<Tile, 256>> TileGrid; // Vector is stored on heap
+
+private:
 	uint8_t nSpriteSheet[128][128];
 
 	std::map<uint32_t, olc::Decal*> SpriteDecals;
@@ -82,7 +86,7 @@ public:
 	uint16_t WaterLevel(uint8_t x);
 
 	void DrawExileParticle(olc::PixelGameEngine* PGE, int32_t nScreenX, int32_t nScreenY, float fZoom, uint8_t nDoubleHeight, olc::Pixel p);
-	void DrawExileSprite(olc::PixelGameEngine* PGE, uint8_t nSpriteID, int32_t nScreenX, int32_t nScreenY, float fZoom, uint8_t nPaletteID, uint8_t nHorizontalInvert = 0, uint8_t nVerticalInvert = 0, uint8_t nTeleporting = 0, uint8_t nTimer = 0);
+	void DrawExileSprite(olc::PixelGameEngine* PGE, uint8_t nSpriteID, int32_t nScreenX, int32_t nScreenY, float fZoom, uint8_t nPaletteID, uint8_t nHorizontalInvert = 0, uint8_t nVerticalInvert = 0, uint8_t nTeleporting = 0, uint8_t nTimer = 0, int nDebugColour = 0 /*Temp*/);
 
 	void Cheat_GetAllEquipment();
 	void Cheat_StoreAnyObject();

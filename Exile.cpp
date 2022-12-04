@@ -388,6 +388,15 @@ void Exile::GenerateBackgroundGrid() {
 
 	bool bFirstTile{ true };
 
+	int nCounter{ 0x00 }; // Temporary
+	auto hex = [](uint32_t n, uint8_t d) // Temporary
+	{
+		std::string s(d, '0');
+		for (int i = d - 1; i >= 0; i--, n >>= 4)
+			s[i] = "0123456789ABCDEF"[n & 0xF];
+		return s;
+	};
+
 	for (int y = 0; y < 256; y++) {
 		for (int x = 0; x < 256; x++) {
 
@@ -399,18 +408,11 @@ void Exile::GenerateBackgroundGrid() {
 			BBC.ram[0x0095] = x; //square_x
 			BBC.ram[0x0097] = y; //square_y
 
-			bool bObjectAtLocation{ false };
-			int nBackgroundObjectInfoCount{ 0 };
-
 			uint8_t nBackgroundObject_X_Index{ 0x00 };
-			uint8_t nBackgroundObject_Handler_Index{ 0x00 };
-			uint8_t nBackgroundObject_Data_Index{ 0x00 };
-			uint8_t nBackgroundObject_Type_Index{ 0x00 };
+			uint8_t nBackground_processing_flag{ 0x00 }; // Temporary
 
-			uint8_t nBackgroundObject_X{ 0x00 };
-			uint8_t nBackgroundObject_Handler{ 0x00 };
-			uint8_t nBackgroundObject_Data{ 0x00 };
-			uint8_t nBackgroundObject_Type{ 0x00 };
+			for (int i = 2; i < 0x10; i++) BBC.ram[0x08b4 + i] = 0x00; // Temp - set slots on primary stack to empty
+			//nCounter++;
 
 			// Run BBC to determine background tile and palette
 			do {
@@ -418,36 +420,62 @@ void Exile::GenerateBackgroundGrid() {
 				while (!BBC.cpu.complete());
 
 				// Capture background object info:
-				if (BBC.cpu.pc == 0x1749) { nBackgroundObject_X_Index = BBC.cpu.a; };
-				if (BBC.cpu.pc == 0x1754) { nBackgroundObject_Handler_Index = BBC.cpu.x; };
-				if (BBC.cpu.pc == 0x174c) { nBackgroundObject_Data_Index = BBC.cpu.a; };
-				if (BBC.cpu.pc == 0x1752) { nBackgroundObject_Type_Index = BBC.cpu.a; };
+				if (BBC.cpu.pc == 0x1749)
+				{
+					nBackgroundObject_X_Index = BBC.cpu.a;
+					if (nBackgroundObject_X_Index >= 0x02 && nBackgroundObject_X_Index <= 0xf1) nBackground_processing_flag = nBackgroundObject_X_Index; // Temp + to calibrate
+				};
+				if (BBC.cpu.pc == 0x1754) { TileGrid[x][y].nBackgroundObject_Handler_Index = BBC.cpu.x; };
+				if (BBC.cpu.pc == 0x174c) { TileGrid[x][y].nBackgroundObject_Data_Index = BBC.cpu.a; };
+				if (BBC.cpu.pc == 0x1752) { TileGrid[x][y].nBackgroundObject_Type_Index = BBC.cpu.a; };
+				if (BBC.cpu.pc == 0x1757) { TileGrid[x][y].IsBackgroundObject = true; }; // Flag if background object exists
 
-				if (BBC.cpu.pc == 0x1749) { nBackgroundObject_X = BBC.ram[0x05ef + nBackgroundObject_X_Index]; };
-				if (BBC.cpu.pc == 0x1757) { nBackgroundObject_Handler = BBC.cpu.a; bObjectAtLocation = true; }; // Also flag background object exists
-				if (BBC.cpu.pc == 0x174c) { nBackgroundObject_Data = BBC.ram[0x0986 + nBackgroundObject_Data_Index]; };
-				if (BBC.cpu.pc == 0x1752) { nBackgroundObject_Type = BBC.ram[0x0a71 + nBackgroundObject_Type_Index]; };
+				//if (BBC.cpu.pc == 0x177f && nBackground_processing_flag != 0) { nCounter++; std::cout << hex(nCounter, 4) << ": " << hex(nBackgroundObject_X_Index, 2) << ": " << hex(BBC.cpu.a, 2) << '\n'; }; // Check value of background_processing_flag [hex(BBC.ram[0x2d], 2) ]
+				if (BBC.cpu.pc == 0x177f && nBackground_processing_flag != 0) { BBC.ram[0x2d] = BBC.cpu.a; }; // Set background_processing_flag to cpu.a (triggers object handler)
+				if (BBC.cpu.pc == 0x3ec5 && nBackground_processing_flag != 0) { BBC.ram[0x2d] = BBC.cpu.a; }; // Set background_processing_flag to cpu.a (triggers object handler)
+
+				//if (BBC.cpu.pc == 0x4042) { nCounter++; std::cout << hex(nCounter, 4) << ": " << hex(BBC.cpu.a, 2) << '\n'; }; // Temporary - start of pull_objects_in_from_tertiary_stack (144 calls)
+//				if (BBC.cpu.pc == 0x408f) TileGrid[x][y].ObjTemp = Object(1, 0x0f);
+//				if (BBC.cpu.pc == 0x3e87) TileGrid[x][y].ObjTemp = Object(1, 0x0f);
+//				if (BBC.cpu.pc == 0x3e89) TileGrid[x][y].ObjTemp = Object(1, 0x0f);
+//				if (BBC.cpu.pc == 0x3ee2) TileGrid[x][y].ObjTemp = Object(1, 0x0f);
+//				if (BBC.cpu.pc == 0x3ef1) TileGrid[x][y].ObjTemp = Object(1, 0x0f);
+//				if (BBC.cpu.pc == 0x3fcc) TileGrid[x][y].ObjTemp = Object(1, 0x0f);
 
 			} while (BBC.cpu.pc != 0xffa3);
 
-			// Temporary background object output
-			auto hex = [](uint32_t n, uint8_t d)
+			// Exclude certain background objects based on X_Index
+			if (nBackgroundObject_X_Index < 0x02 || nBackgroundObject_X_Index > 0xf1) TileGrid[x][y].IsBackgroundObject = false; // To calibrate 
+			if (BBC.ram[0x08b4 + 0x0f] != 0) 
 			{
-				std::string s(d, '0');
-				for (int i = d - 1; i >= 0; i--, n >>= 4)
-					s[i] = "0123456789ABCDEF"[n & 0xF];
-				return s;
-			};
-			if (bFirstTile) { std::cout << "x_index " << "x " << "x2 " << "y " << "handler " << "data " << "type" << '\n'; bFirstTile = false; }
-			if (bObjectAtLocation) std::cout
-				<< hex(nBackgroundObject_X_Index, 2) << ' '
-				<< hex(nBackgroundObject_X, 2) << ' '
-				<< hex(BBC.ram[0x53], 2) << ' '
-				<< hex(BBC.ram[0x55], 2) << ' '
-				<< hex(nBackgroundObject_Handler, 2) << ' '
-				<< hex(nBackgroundObject_Data, 2) << ' '
-				<< hex(nBackgroundObject_Type, 2)
-				<< '\n';
+				nCounter++; std::cout << hex(nCounter, 4) << " ";
+				TileGrid[x][y].ObjTemp = Object(1, 0x0f);
+			}
+
+//			// Temporary background object output:
+//			uint8_t nBackgroundObject_Handler{ 0x00 };
+//			uint8_t nBackgroundObject_Data{ 0x00 };
+//			uint8_t nBackgroundObject_Type{ 0x00 };
+//			nBackgroundObject_Handler = BBC.ram[0x06ee + TileGrid[x][y].nBackgroundObject_Handler_Index];
+//			nBackgroundObject_Data = BBC.ram[0x0986 + TileGrid[x][y].nBackgroundObject_Data_Index];
+//			nBackgroundObject_Type = BBC.ram[0x0a71 + TileGrid[x][y].nBackgroundObject_Type_Index];
+//
+//			auto hex = [](uint32_t n, uint8_t d)
+//			{
+//				std::string s(d, '0');
+//				for (int i = d - 1; i >= 0; i--, n >>= 4)
+//					s[i] = "0123456789ABCDEF"[n & 0xF];
+//				return s;
+//			};
+//			if (bFirstTile) { std::cout << "x " << "y " << "handler " << "data " << "type" << '\n'; bFirstTile = false; }
+//			if (TileGrid[x][y].IsBackgroundObject) std::cout
+//				<< hex(BBC.ram[0x53], 2) << ' '
+//				<< hex(BBC.ram[0x55], 2) << ' '
+//				<< hex(nBackgroundObject_Handler, 2) << ' '
+//				<< hex(nBackgroundObject_Data, 2) << ' '
+//				<< hex(nBackgroundObject_Type, 2)
+//				<< '\n';
+
 
 			TileGrid[x][y].TileID = BBC.ram[0x08]; // square_sprite
 			TileGrid[x][y].Orientation = BBC.ram[0x09]; // square_orientation
@@ -585,7 +613,7 @@ void Exile::DrawExileSprite(olc::PixelGameEngine* PGE,
 	                        int32_t nScreenX, int32_t nScreenY, float fZoom,
 	                        uint8_t nPaletteID, 
 	                        uint8_t nHorizontalInvert, uint8_t nVerticalInvert,
-	                        uint8_t nTeleporting, uint8_t nTimer) {
+	                        uint8_t nTeleporting, uint8_t nTimer, int nDebugColour) {
 	
 	uint32_t nSpriteKey;
 	static olc::Sprite *sprSprite;
@@ -644,12 +672,20 @@ void Exile::DrawExileSprite(olc::PixelGameEngine* PGE,
 		fVerticalZoom = -fVerticalZoom;
 	}
 
+	if (nDebugColour > 0)
+	{
+		olc::Pixel colDebug = (nDebugColour == 2) ? olc::DARK_BLUE : olc::DARK_GREY;
+		PGE->FillRectDecal(olc::vf2d(nScreenX, nScreenY), olc::vf2d(decSprite->sprite->width * fHorizontalZoom, decSprite->sprite->height * fVerticalZoom), colDebug); //Temp
+	}
+	//if (nSpriteID == 0x4a) nScreenX-=2.0f; // VERY temporary :)
 	PGE->DrawDecal(olc::vf2d(nScreenX, nScreenY), decSprite, olc::vf2d(fHorizontalZoom, fVerticalZoom));
 	//---------------------------------------------------------------------------------
 }
 
 void Exile::Initialise()
 {
+	TileGrid.resize(256);
+
 	GenerateSpriteSheet();
 	GenerateBackgroundGrid();
 
@@ -678,6 +714,8 @@ Obj Exile::Object(uint8_t nStackID, uint8_t nObjectID)
 		O.Teleporting = (nObjFlags >> 4) & 1; // Bit 4: Teleporting
 		O.HorizontalFlip = (nObjFlags >> 7) & 1; // Bit 7: Horizontal invert
 		O.VerticalFlip = (nObjFlags >> 6) & 1; // Bit 6: Vertical invert
+
+		//if (BBC.ram[0x08e6 + nObjectID] == 0x00 && (O.GameX & 1) == 1) O.GameX -= 1; // object_stack_vel_x [TD - Temp??]
 		break;
 
 	case 2:

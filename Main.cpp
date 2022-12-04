@@ -108,6 +108,12 @@ public:
 		//Game.PatchExileRAM();
 		Game.Initialise();
 
+		// Temporary - as code corrupted when reading background objects
+		for (int i = 0; i < 0xffff; i++) Game.BBC.ram[i] = 0;
+		Game.LoadExileFromDisassembly("exile-disassembly.txt"); // www.level7.org.uk/miscellany/exile-disassembly.txt
+		Game.BBC.cpu.stkp = 0xff;
+		Game.BBC.cpu.pc = GAME_RAM_STARTGAMELOOP;
+
 		return true;
 	}
 
@@ -280,15 +286,15 @@ public:
 
 			if ((nObjectID == 0) || (nObjectID == Game.BBC.ram[0xdd])) {
 				// Offset the scroll shift for player (and objects held) to avoid judder
-				O.GameX += fScrollShiftX * fTimeSinceLastFrame / 0.025;
+				O.GameX += fScrollShiftX * fTimeSinceLastFrame / 0.025; // TD Note: should be a float, no?
 				O.GameY += fScrollShiftY * fTimeSinceLastFrame / 0.025;
 			}
 
 			Game.DrawExileSprite(
 				this,
 				O.SpriteID,
-				ScreenCoordinateX(O.GameX),
-				ScreenCoordinateY(O.GameY),
+				ScreenCoordinateX((float)O.GameX),
+				ScreenCoordinateY((float)O.GameY),
 				SCREEN_ZOOM,
 				O.Palette,
 				O.HorizontalFlip,
@@ -315,11 +321,12 @@ public:
 					ScreenCoordinateX(O.GameX),
 					ScreenCoordinateY(O.GameY),
 					SCREEN_ZOOM,
-					O.Palette - 1,
+					O.Palette,
 					O.HorizontalFlip,
 					O.VerticalFlip,
 					O.Teleporting,
-					O.Timer);
+					O.Timer,
+					2); // Temp
 			}
 		}
 		// O------------------------------------------------------------------------------O
@@ -357,13 +364,14 @@ public:
 				if (y < 0) { fTileShiftY = y * GAME_TILE_HEIGHT; y = 0; }
 				if (y > 0xFF) { fTileShiftY = (y - 0xFF) * GAME_TILE_HEIGHT; y = 0xFF; }
 
-				float fScreenX = ScreenCoordinateX(Game.BackgroundGrid(x, y).GameX + fTileShiftX + 1); // Why need "+1"?
-				float fScreenY = ScreenCoordinateY(Game.BackgroundGrid(x, y).GameY + fTileShiftY);
+				float fScreenX = ScreenCoordinateX((float)Game.BackgroundGrid(x, y).GameX + fTileShiftX);
+				float fScreenY = ScreenCoordinateY((float)Game.BackgroundGrid(x, y).GameY + fTileShiftY);
 
+				int VerticalFlip = (Game.BackgroundGrid(x, y).Orientation >> 6) & 1; // Check bit 6 
+				int HorizontalFlip = (Game.BackgroundGrid(x, y).Orientation >> 7) & 1; // Check bit 7
+
+				// Draw background tile:
 				if (Game.BackgroundGrid(x, y).TileID != GAME_TILE_BLANK) {
-					int VerticalFlip = (Game.BackgroundGrid(x, y).Orientation >> 6) & 1; // Check bit 6 
-					int HorizontalFlip = (Game.BackgroundGrid(x, y).Orientation >> 7) & 1; // Check bit 7
-
 					Game.DrawExileSprite(
 						this,
 						Game.BackgroundGrid(x, y).SpriteID,
@@ -373,8 +381,38 @@ public:
 						VerticalFlip);
 				}
 
-				Game.DetermineBackground(x, y, nFrameCounter); // Called to ensure background objects are activated when in view
+				// Draw background object if in tertiary stack:
+				uint8_t nBackgroundObject_Handler{ 0x00 };
+				uint8_t nBackgroundObject_Data{ 0x00 };
+				uint8_t nBackgroundObject_Type{ 0x00 };
+				nBackgroundObject_Handler = Game.BBC.ram[0x06ee + Game.TileGrid[x][y].nBackgroundObject_Handler_Index];
+				nBackgroundObject_Data = Game.BBC.ram[0x0986 + Game.TileGrid[x][y].nBackgroundObject_Data_Index];
+				nBackgroundObject_Type = Game.BBC.ram[0x0a71 + Game.TileGrid[x][y].nBackgroundObject_Type_Index];
 
+				bool bObjectInTertiaryStack = (nBackgroundObject_Data & 0x80) == 0x80; // Check bit 8
+
+				if (Game.TileGrid[x][y].IsBackgroundObject)
+				{
+					if (bObjectInTertiaryStack)
+					{
+
+						Obj O = Game.TileGrid[x][y].ObjTemp;
+
+						Game.DrawExileSprite(
+							this,
+							O.SpriteID,
+							ScreenCoordinateX(O.GameX),
+							ScreenCoordinateY(O.GameY),
+							SCREEN_ZOOM,
+							O.Palette,
+							O.HorizontalFlip,
+							O.VerticalFlip,
+							O.Teleporting,
+							O.Timer,
+							3 // Temp
+						);
+					}
+				}
 			}
 		}
 
