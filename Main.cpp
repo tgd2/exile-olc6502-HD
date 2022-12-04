@@ -253,6 +253,8 @@ public:
 		}
 		// O------------------------------------------------------------------------------O
 
+		SetDecalMode(olc::DecalMode::ADDITIVE); // TD Temp
+
 		// O------------------------------------------------------------------------------O
 		// | Draw particles                                                               |
 		// O------------------------------------------------------------------------------O
@@ -331,22 +333,7 @@ public:
 		}
 		// O------------------------------------------------------------------------------O
 
-		// O------------------------------------------------------------------------------O
-		// | Draw "foreground" water (transparent)                                        |
-		// O------------------------------------------------------------------------------O
-		for (int i = -1; i < (fCanvasWidth / GAME_TILE_WIDTH + 1); i++) { // Draw general water level:
-			int x = i + nTileOffsetX;
-			float fScreenX = ScreenCoordinateX(x * GAME_TILE_WIDTH);
-			float fScreenY = ScreenCoordinateY(Game.WaterLevel(x));
-			if (fScreenY < -GAME_TILE_HEIGHT) fScreenY = -GAME_TILE_HEIGHT;
-			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWater[1].get(), olc::vf2d(SCREEN_ZOOM, SCREEN_ZOOM));
-		}
-		for (int i = 0; i < Game.WaterTiles.size(); i++) { // Draw specific water tiles throughout map:
-			float fScreenX = ScreenCoordinateX(Game.WaterTiles[i].GameX * GAME_TILE_WIDTH);
-			float fScreenY = ScreenCoordinateY(Game.WaterTiles[i].GameY * GAME_TILE_HEIGHT);
-			olc::PixelGameEngine::DrawDecal(olc::vf2d(fScreenX, fScreenY), decWaterSquare[1].get(), olc::vf2d(SCREEN_ZOOM, SCREEN_ZOOM));
-		}
-		// O------------------------------------------------------------------------------O
+		SetDecalMode(olc::DecalMode::NORMAL); // TD Temp
 
 		// O------------------------------------------------------------------------------O
 		// | Draw background map                                                          |
